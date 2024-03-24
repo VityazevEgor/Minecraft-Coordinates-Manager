@@ -6,8 +6,14 @@ import java.awt.Robot;
 import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.util.HashMap;
+
+import javax.imageio.ImageIO;
+
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class Emulator {
     private Robot r;
@@ -59,6 +65,7 @@ public class Emulator {
         }
     }
 
+    // works only on windows
     public String getCords(){
         r.keyPress(KeyEvent.VK_F3);
         r.keyPress(KeyEvent.VK_C);
@@ -77,8 +84,25 @@ public class Emulator {
 
     @SuppressWarnings("exports")
     public BufferedImage getScreenShot(){
-        var screenSize = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
-        return r.createScreenCapture(screenSize);
+        if (System.getProperties().getProperty("os.name").contains("windows")){
+            var screenSize = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
+            return r.createScreenCapture(screenSize);
+        }
+        else{
+            try {
+                ProcessBuilder pb = new ProcessBuilder("shutter", "-f", "-e", "-n", "-o", "screenshot.png");
+                Process p = pb.start();
+                p.waitFor();
+
+                print("Made screenshot using shutter");
+                return ImageIO.read(new File("screenshot.png"));
+
+            } catch (IOException | InterruptedException ex) {
+                print("got error");
+                ex.printStackTrace();
+                return null;
+            }
+        }
     }
 
     private void sleep(Integer mSeconds){

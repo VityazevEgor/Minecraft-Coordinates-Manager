@@ -2,12 +2,19 @@ package com.vityazev_egor;
 
 import java.util.Scanner;
 
+import javax.imageio.ImageIO;
+
 import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.NativeHookException;
 
 import java.awt.AWTException;
 import java.awt.HeadlessException;
+import java.awt.Rectangle;
+import java.awt.Robot;
+import java.awt.Toolkit;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 
 public class App 
@@ -16,6 +23,9 @@ public class App
     {
         emulateTest("good vibes only");
         //testKeyLogger();
+        //testScLinux();
+        //var em = new KeyEmulator();
+        //System.out.println(em.GetClipBoard());
     }
 
     private static void testKeyLogger() throws NativeHookException{
@@ -35,5 +45,22 @@ public class App
         // emulator.twoKeys();
         // Thread.sleep(1000);
         // System.out.println(emulator.GetClipBoard());
+    }
+
+    public static void testScLinux(){
+        try {
+            // Создаем объект ProcessBuilder
+            ProcessBuilder pb = new ProcessBuilder("shutter", "-f", "-e", "-n", "-o", "screenshot.png");
+
+            // Запускаем процесс
+            Process p = pb.start();
+
+            // Ожидаем завершения процесса
+            p.waitFor();
+
+            System.out.println("Скриншот сохранен в файл screenshot.png");
+        } catch (IOException | InterruptedException ex) {
+            ex.printStackTrace();
+        }
     }
 }

@@ -12,7 +12,7 @@ public class KeyListener implements NativeKeyListener {
     @SuppressWarnings("exports")
     @Override
     public void nativeKeyPressed(NativeKeyEvent e){
-
+        print(("Key Pressed: " + NativeKeyEvent.getKeyText(e.getKeyCode())));
         // Если нажата кнопка хоме то открыть главное меню
         if (e.getKeyCode() == NativeKeyEvent.VC_HOME){
 
@@ -30,7 +30,7 @@ public class KeyListener implements NativeKeyListener {
 
         }
 
-        if (e.getKeyCode() == NativeKeyEvent.VC_INSERT){
+        if (e.getKeyCode() == NativeKeyEvent.VC_INSERT || e.getKeyCode() == NativeKeyEvent.VC_F13){
 
             print("Detcted insert key");
             Platform.runLater(()->{
