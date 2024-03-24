@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox prefHeight="376.0" prefWidth="528.0" spacing="20.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.vityazev_egor.SecondaryController">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+   <children>
+      <Label text="Preview:" />
+      <ImageView fx:id="previewView" fitHeight="196.0" fitWidth="248.0" pickOnBounds="true" preserveRatio="true" />
+      <Label text="Coords:" />
+      <TextField fx:id="cordsField" />
+   </children>
+</VBox>
