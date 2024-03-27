@@ -13,7 +13,6 @@ import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 
 public class Emulator {
     private Robot r;
@@ -78,13 +77,13 @@ public class Emulator {
         catch (Exception ex){
             print("Can't get data from clipboard");
             ex.printStackTrace();
-            return null;
+            return "";
         }
     }
 
     @SuppressWarnings("exports")
     public BufferedImage getScreenShot(){
-        if (System.getProperties().getProperty("os.name").contains("windows")){
+        if (FakeMain.isWindows){
             var screenSize = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
             return r.createScreenCapture(screenSize);
         }

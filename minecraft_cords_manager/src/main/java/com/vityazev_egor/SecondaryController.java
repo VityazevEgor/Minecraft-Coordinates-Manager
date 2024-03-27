@@ -1,9 +1,15 @@
 package com.vityazev_egor;
 
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
+import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TextField;
@@ -20,19 +26,53 @@ public class SecondaryController implements Initializable {
     @FXML
     private ImageView previewView;
 
+    // пул потоков который могут выполнять с определённо задрежкой
+    private ScheduledExecutorService shPool = Executors.newScheduledThreadPool(1);
+
     // method that gets data about cords
     @Override
     public void initialize(URL arg0, ResourceBundle arg1) {
         var emu = new Emulator();
         String cords = filterCords(emu.getCords());
+
         if (cords != null && !cords.isEmpty() && !cords.isBlank()){
             cordsField.setText(cords);
         }
         else{
             cordsField.setText("Can't get cords. Check console for debug information");
         }
-        previewView.setImage(convertBufferedImage(emu.getScreenShot()));
-        
+
+        if (!FakeMain.isWindows){
+            // создаём поток который делает скриншот и устаналивает его в имдж ваев
+            Runnable getSc = () ->{
+                Platform.runLater(()->{
+                    App.setVisible(false);  
+                });
+
+                var screen = convertBufferedImage(emu.getScreenShot());
+
+                Platform.runLater(()->{
+                    previewView.setImage(screen);
+                    App.setVisible(true); 
+                });
+            };
+
+            // запускаем в отдельном потоке задачу для создания скриншота, которая выполниться через 200 секунд 
+            shPool.schedule(getSc, 200, TimeUnit.MILLISECONDS);
+            
+        }
+        else{
+            previewView.setImage(convertBufferedImage(emu.getScreenShot()));
+        }
+    }
+
+    @FXML
+    void loadPmForm(ActionEvent event) {
+        try {
+            App.setRoot("primary");
+        } catch (IOException e) {
+            System.out.println("Can't load primary form");
+        }
     }
 
     private Image convertBufferedImage(BufferedImage toConvert){

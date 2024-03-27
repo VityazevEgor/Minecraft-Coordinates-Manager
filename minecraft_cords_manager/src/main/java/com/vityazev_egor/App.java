@@ -2,10 +2,12 @@ package com.vityazev_egor;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 import java.io.IOException;
 
@@ -17,11 +19,22 @@ public class App extends Application {
     @SuppressWarnings("exports")
     @Override
     public void start(Stage stage) throws IOException {
-        scene = new Scene(loadFXML("primary"), 640, 480);
+        scene = new Scene(loadFXML("primary"));
         _stage = stage;
         _stage.setScene(scene);
-        _stage.show();
+        _stage.setResizable(false);
 
+        _stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+
+            @Override
+            public void handle(WindowEvent arg0) {
+                System.out.println("Form closed so i going to kill app");
+                System.exit(0);
+            }
+            
+        });
+        _stage.show();
+        
         // Это строчка делает так, чтобы даже после того как мы скрыли Stage приложение продолжало работать в фоновом режиме и Platform.runLater дальше работал
         Platform.setImplicitExit(false);
     }
@@ -36,6 +49,8 @@ public class App extends Application {
         }
         if (flag){
             _stage.show();
+            _stage.toFront();
+            _stage.requestFocus();
         }
         else{
             _stage.hide();

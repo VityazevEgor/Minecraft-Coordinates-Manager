@@ -5,6 +5,9 @@ import com.github.kwhat.jnativehook.NativeHookException;
 
 // фейковый главный класс просто для того, чтобы программа работала при компиляции в jar
 public class FakeMain {
+
+    public static final Boolean isWindows = System.getProperties().getProperty("os.name").contains("windows");
+
     public static void main(String[] args) {
         try {
             GlobalScreen.registerNativeHook();
