@@ -31,6 +31,22 @@
         <artifactId>jnativehook</artifactId>
         <version>2.2.2</version>
     </dependency>
+
+    <!-- https://mvnrepository.com/artifact/com.sun.jna/jna -->
+  <dependency>
+      <groupId>com.sun.jna</groupId>
+      <artifactId>jna</artifactId>
+      <version>3.0.9</version>
+  </dependency>
+
+  <!-- https://mvnrepository.com/artifact/net.java.dev.jna/jna-platform -->
+  <dependency>
+      <groupId>net.java.dev.jna</groupId>
+      <artifactId>jna-platform</artifactId>
+      <version>5.14.0</version>
+  </dependency>
+
+
   </dependencies>
 
   <build>

@@ -1,9 +1,12 @@
 package com.vityazev_egor;
 
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -32,6 +35,9 @@ public class PrimaryController implements Initializable{
 
     @FXML
     private VBox tableBox;
+
+    private final Emulator emu = new Emulator();
+    private ScheduledExecutorService shPool = Executors.newScheduledThreadPool(1);
 
     private class cordsData{
         private final ObjectProperty<ImageView> image;
@@ -91,11 +97,28 @@ public class PrimaryController implements Initializable{
         buttonsColumns.setCellValueFactory(cellData -> cellData.getValue().buttonsProperty());
 
         var b = new Button();
-        b.setText("Test");
+        b.setText("Teleport");
         b.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-				b.setText("You've clicked!");
+                if (FakeMain.isWindows){
+                    var processList = NativeWindowsManager.getAllProcess();
+                    var minecraftWindow = processList.stream().filter(p-> p.title.toLowerCase().contains("minecraft") && !p.title.toLowerCase().contains("manager")).findFirst().orElse(null);
+                    if (minecraftWindow != null){
+                        if (NativeWindowsManager.ActivateWindow(minecraftWindow)){
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e) {
+                                // TODO Auto-generated catch block
+                                e.printStackTrace();
+                            }
+
+                            emu.press(KeyEvent.VK_T);
+                            emu.writeText("/tp -217.090 66.00 44.512", 100);
+                        }
+                        emu.press(KeyEvent.VK_ENTER);
+                    }                    
+                }
             }  
         });
 
@@ -103,7 +126,7 @@ public class PrimaryController implements Initializable{
         image.setImage(new Image(new File("screenshot.png").toURI().toString()));
         image.setFitWidth(200);
         image.setFitHeight(150);
-        data.add(new cordsData(image, "TetsTetsTetsTetsTetsTetsTetsTetsTetsTetsTetsTetsTetsTetsTetsTetsTets", "123 123 123", b));
+        data.add(new cordsData(image, "Home", "-217.090 66.00 44.512", b));
         table.getColumns().addAll(imageColumn, titleColumn, cordsColumn, buttonsColumns);
         table.setItems(data);
 

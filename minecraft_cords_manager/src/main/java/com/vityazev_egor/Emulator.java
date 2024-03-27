@@ -114,7 +114,7 @@ public class Emulator {
         }
     }
 
-    private void press(Integer keyCode){
+    public void press(Integer keyCode){
         r.keyPress(keyCode);
         r.keyRelease(keyCode);
     }

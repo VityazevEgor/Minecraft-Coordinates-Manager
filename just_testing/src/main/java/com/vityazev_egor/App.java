@@ -6,6 +6,7 @@ import javax.imageio.ImageIO;
 
 import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.NativeHookException;
+import com.vityazev_egor.NativeWindowsManager.ProcessInfo;
 
 import java.awt.AWTException;
 import java.awt.HeadlessException;
@@ -21,7 +22,7 @@ public class App
 {
     public static void main( String[] args ) throws NativeHookException, AWTException, InterruptedException, HeadlessException, UnsupportedFlavorException, IOException
     {
-        emulateTest("good vibes only");
+        emulateTest("/tp -123.54 ");
         //testKeyLogger();
         //testScLinux();
         //var em = new KeyEmulator();
@@ -38,13 +39,22 @@ public class App
     }
 
     public static void emulateTest(String textToWrite) throws AWTException, InterruptedException, HeadlessException, UnsupportedFlavorException, IOException{
-        
+        //testWinApi();
         var emulator = new KeyEmulator();
         emulator.writeText(textToWrite, 3000);
         // Thread.sleep(3000);
         // emulator.twoKeys();
         // Thread.sleep(1000);
         // System.out.println(emulator.GetClipBoard());
+    }
+
+    public static void testWinApi(){
+        var processes = NativeWindowsManager.getAllProcess();
+        ProcessInfo edgeProcess = processes.stream().filter(p->p.title.toLowerCase().contains("secondary")).findFirst().orElse(null);
+        if (edgeProcess!=null){
+            System.out.println("Found process");
+            //NativeWindowsManager.ActivateWindow(edgeProcess);
+        }
     }
 
     public static void testScLinux(){

@@ -22,8 +22,11 @@ public class App extends Application {
         scene = new Scene(loadFXML("primary"));
         _stage = stage;
         _stage.setScene(scene);
-        _stage.setResizable(false);
+        //_stage.setResizable(false);
+        _stage.setMinWidth(720+10);
+        _stage.setMinHeight(524+10);
 
+        _stage.setTitle("Minecraft cords manager");
         _stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 
             @Override

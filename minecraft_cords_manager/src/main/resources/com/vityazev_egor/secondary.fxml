@@ -6,31 +6,40 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="524.0" prefWidth="720.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.vityazev_egor.SecondaryController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="481.0" minWidth="720.0" prefHeight="481.0" prefWidth="720.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.vityazev_egor.SecondaryController">
    <children>
-      <Button layoutX="637.0" layoutY="14.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="76.0" text="Save" textFill="#bfa65c" AnchorPane.rightAnchor="7.0" />
-      <Button fx:id="backButton" layoutX="546.0" layoutY="14.0" mnemonicParsing="false" onAction="#loadPmForm" prefHeight="24.0" prefWidth="76.0" text="Back" textFill="#c94646" AnchorPane.rightAnchor="100.0" />
-      <VBox layoutX="14.0" layoutY="38.0" prefHeight="470.0" prefWidth="355.0" spacing="10.0" AnchorPane.leftAnchor="14.0">
+      <HBox layoutX="10.0" layoutY="39.0" prefHeight="422.0" prefWidth="700.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0">
          <children>
-            <Label text="Preview:" />
-            <ImageView fx:id="previewView" fitHeight="269.0" fitWidth="338.0" pickOnBounds="true" preserveRatio="true" />
+            <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="470.0" prefWidth="355.0" spacing="10.0">
+               <children>
+                  <Label text="Preview:" />
+                  <ImageView fx:id="previewView" fitHeight="269.0" fitWidth="338.0" pickOnBounds="true" preserveRatio="true" />
+               </children>
+               <padding>
+                  <Insets left="10.0" top="10.0" />
+               </padding>
+            </VBox>
+            <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="422.0" prefWidth="346.0" spacing="10.0">
+               <children>
+                  <Label text="Enter title for cords:" />
+                  <TextField />
+                  <Label text="Cotds to be saved:" />
+                  <TextField fx:id="cordsField" editable="false" />
+               </children>
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding>
+            </VBox>
          </children>
-         <padding>
-            <Insets left="10.0" top="10.0" />
-         </padding>
-      </VBox>
-      <VBox layoutX="369.0" layoutY="38.0" prefHeight="470.0" prefWidth="338.0" spacing="10.0" AnchorPane.rightAnchor="13.0">
+      </HBox>
+      <HBox alignment="TOP_RIGHT" layoutX="10.0" layoutY="14.0" prefHeight="25.0" prefWidth="700.0" spacing="10.0" AnchorPane.rightAnchor="10.0">
          <children>
-            <Label text="Enter title for cords:" />
-            <TextField />
-            <Label text="Cotds to be saved:" />
-            <TextField fx:id="cordsField" editable="false" />
+            <Button fx:id="backButton" mnemonicParsing="false" onAction="#loadPmForm" prefHeight="24.0" prefWidth="76.0" text="Back" textFill="#c94646" />
+            <Button mnemonicParsing="false" prefHeight="24.0" prefWidth="76.0" text="Save" textFill="#bfa65c" />
          </children>
-         <padding>
-            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-         </padding>
-      </VBox>
+      </HBox>
    </children>
 </AnchorPane>
