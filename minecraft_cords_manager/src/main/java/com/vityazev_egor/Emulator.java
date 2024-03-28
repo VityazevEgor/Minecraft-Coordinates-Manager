@@ -5,6 +5,7 @@ import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
 import java.util.HashMap;
 
 import javax.imageio.ImageIO;
@@ -79,6 +80,11 @@ public class Emulator {
             ex.printStackTrace();
             return "";
         }
+    }
+
+    public void setClipBoard(String text){
+        var content = new StringSelection(text);
+        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(content, content);
     }
 
     @SuppressWarnings("exports")

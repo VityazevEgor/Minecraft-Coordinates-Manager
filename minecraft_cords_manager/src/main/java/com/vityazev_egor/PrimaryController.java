@@ -19,9 +19,11 @@ import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -118,6 +120,14 @@ public class PrimaryController implements Initializable{
                         }
                         emu.press(KeyEvent.VK_ENTER);
                     }                    
+                }
+                else{
+                    emu.setClipBoard("/tp -217.090 66.00 44.512");
+                    Alert al = new Alert(AlertType.INFORMATION);
+                    al.setTitle("Information");
+                    al.setContentText("Command for teleport was copied to your clipboard");
+                    al.setHeaderText(null);
+                    al.show();
                 }
             }  
         });
