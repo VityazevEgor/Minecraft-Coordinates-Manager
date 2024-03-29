@@ -49,7 +49,7 @@ public class SecondaryController implements Initializable {
                     App.setVisible(false);  
                 });
 
-                var screen = convertBufferedImage(emu.getScreenShot());
+                var screen = Shared.convertBufferedImage(emu.getScreenShot());
 
                 Platform.runLater(()->{
                     previewView.setImage(screen);
@@ -62,7 +62,7 @@ public class SecondaryController implements Initializable {
             
         }
         else{
-            previewView.setImage(convertBufferedImage(emu.getScreenShot()));
+            previewView.setImage(Shared.convertBufferedImage(emu.getScreenShot()));
         }
     }
 
@@ -75,18 +75,7 @@ public class SecondaryController implements Initializable {
         }
     }
 
-    private Image convertBufferedImage(BufferedImage toConvert){
-        WritableImage wi = new WritableImage(toConvert.getWidth(), toConvert.getHeight());
-
-        PixelWriter pw = wi.getPixelWriter();
-        for (int x = 0; x < toConvert.getWidth(); x++){
-            for (int y = 0; y < toConvert.getHeight(); y++){
-                pw.setArgb(x, y, toConvert.getRGB(x, y));
-            }
-        }
-
-        return new ImageView(wi).getImage();
-    }
+    
 
     private String filterCords(String rawText){
         if (!rawText.contains("/execute in minecraft:overworld run tp @s ")) return null;
