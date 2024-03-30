@@ -25,7 +25,7 @@
             <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="422.0" prefWidth="346.0" spacing="10.0">
                <children>
                   <Label text="Enter title for cords:" />
-                  <TextField />
+                  <TextField fx:id="titleField"/>
                   <Label text="Cotds to be saved:" />
                   <TextField fx:id="cordsField" editable="false" />
                </children>
@@ -38,7 +38,7 @@
       <HBox alignment="TOP_RIGHT" layoutX="10.0" layoutY="14.0" prefHeight="25.0" prefWidth="700.0" spacing="10.0" AnchorPane.rightAnchor="10.0">
          <children>
             <Button fx:id="backButton" mnemonicParsing="false" onAction="#loadPmForm" prefHeight="24.0" prefWidth="76.0" text="Back" textFill="#c94646" />
-            <Button mnemonicParsing="false" prefHeight="24.0" prefWidth="76.0" text="Save" textFill="#bfa65c" />
+            <Button fx:id="createButton" mnemonicParsing="false" onAction="#createCords" prefHeight="24.0" prefWidth="76.0" text="Save" textFill="#bfa65c" />
          </children>
       </HBox>
    </children>

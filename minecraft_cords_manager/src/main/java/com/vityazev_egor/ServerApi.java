@@ -5,8 +5,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-
 import javax.imageio.ImageIO;
 
 import org.apache.hc.client5.http.classic.HttpClient;
@@ -26,6 +24,7 @@ import org.apache.hc.core5.http.io.entity.EntityUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+@SuppressWarnings("exports")
 public class ServerApi {
 
     public static class CordsModel{
@@ -105,8 +104,7 @@ public class ServerApi {
                 return false;
             }
         } catch (IOException e) {
-            
-            e.printStackTrace();
+            Shared.printEr(e, "Error in sending request in {CreateCord}");
             return false;
         }
         

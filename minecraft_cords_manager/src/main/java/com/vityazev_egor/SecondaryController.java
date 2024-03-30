@@ -12,11 +12,11 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.ImageView;
-import javafx.scene.image.PixelWriter;
-import javafx.scene.image.WritableImage;
 
 public class SecondaryController implements Initializable {
 
@@ -24,10 +24,18 @@ public class SecondaryController implements Initializable {
     private TextField cordsField;
 
     @FXML
+    private TextField titleField;
+
+    @FXML
     private ImageView previewView;
+
+    @FXML
+    private Button createButton;
 
     // пул потоков который могут выполнять с определённо задрежкой
     private ScheduledExecutorService shPool = Executors.newScheduledThreadPool(1);
+
+    private BufferedImage preview  = null;
 
     // method that gets data about cords
     @Override
@@ -49,12 +57,15 @@ public class SecondaryController implements Initializable {
                     App.setVisible(false);  
                 });
 
-                var screen = Shared.convertBufferedImage(emu.getScreenShot());
+                preview = emu.getScreenShot();
+                if (preview != null){
+                    var screen = Shared.convertBufferedImage(preview);
 
-                Platform.runLater(()->{
-                    previewView.setImage(screen);
-                    App.setVisible(true); 
-                });
+                    Platform.runLater(()->{
+                        previewView.setImage(screen);
+                        App.setVisible(true); 
+                    });
+                }
             };
 
             // запускаем в отдельном потоке задачу для создания скриншота, которая выполниться через 200 секунд 
@@ -64,6 +75,7 @@ public class SecondaryController implements Initializable {
         else{
             previewView.setImage(Shared.convertBufferedImage(emu.getScreenShot()));
         }
+
     }
 
     @FXML
@@ -72,6 +84,24 @@ public class SecondaryController implements Initializable {
             App.setRoot("primary");
         } catch (IOException e) {
             System.out.println("Can't load primary form");
+        }
+    }
+
+    @FXML
+    void createCords(ActionEvent event){
+        if (ServerApi.createCord(titleField.getText(), cordsField.getText(), preview)){
+            var message = new Alert(AlertType.INFORMATION);
+            message.setHeaderText(null);
+            message.setContentText("The coordinates were successfully saved");
+            message.setTitle("Done");
+            message.show();
+        }
+        else{
+            var message = new Alert(AlertType.ERROR);
+            message.setHeaderText(null);
+            message.setContentText("Can't save coordinates. Plaease check your fields and make sure that your server is up");
+            message.setTitle("Error");
+            message.show();
         }
     }
 

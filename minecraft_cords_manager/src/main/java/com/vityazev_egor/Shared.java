@@ -1,7 +1,6 @@
 package com.vityazev_egor;
 
 import java.awt.image.BufferedImage;
-
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelWriter;
@@ -9,6 +8,10 @@ import javafx.scene.image.WritableImage;
 
 public class Shared {
 
+    private static final String redStart = "\u001B[31m";
+    private static final String redEnd = "\u001B[0m";
+
+    @SuppressWarnings("exports")
     public static Image convertBufferedImage(BufferedImage toConvert){
         WritableImage wi = new WritableImage(toConvert.getWidth(), toConvert.getHeight());
 
@@ -20,5 +23,10 @@ public class Shared {
         }
 
         return new ImageView(wi).getImage();
+    }
+
+    public static void printEr(Exception ex, String message){
+        System.out.println(redStart +"ERROR: "+message+" : "+ex.getMessage()+redEnd);
+        ex.printStackTrace();
     }
 }

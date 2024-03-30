@@ -1,6 +1,5 @@
 package com.vityazev_egor;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
@@ -18,22 +17,26 @@ public class FakeMain {
         // try {
         //     tetsRs();
         // } catch (IOException e) {
-        //     // TODO Auto-generated catch block
+        //     
         //     e.printStackTrace();
         // }
-        System.out.println("I'm running on windows = "+isWindows);
+        
+        System.out.println("I'm running on windows = " + isWindows);
         System.out.println(System.getProperties().getProperty("os.name"));
-        try {
-            GlobalScreen.registerNativeHook();
-        } catch (NativeHookException e) {
-            System.out.println("Can't register global hook");
-            e.printStackTrace();
-            System.exit(1);
+        if (isWindows){
+            try {
+                GlobalScreen.registerNativeHook();
+            } catch (NativeHookException e) {
+                System.out.println("Can't register global hook");
+                e.printStackTrace();
+                System.exit(1);
+            }
+            GlobalScreen.addNativeKeyListener(new KeyListener());
         }
-        GlobalScreen.addNativeKeyListener(new KeyListener());
         App.main(args);
     }
 
+    @SuppressWarnings("unused")
     private static void tetsRs() throws IOException{
         // BufferedImage pr = ImageIO.read(new File("screenshot.png"));
         // System.out.println(ServerApi.createCord("test", "127.0 127.0", pr));

@@ -1,12 +1,9 @@
 package com.vityazev_egor;
 
-import java.awt.List;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -21,7 +18,6 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -30,10 +26,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 public class PrimaryController implements Initializable{
@@ -84,73 +77,39 @@ public class PrimaryController implements Initializable{
         try {
             App.setRoot("secondary");
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Shared.printEr(e, "Can't open secondary form");
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void initialize(URL arg0, ResourceBundle arg1) {
 
+        // Создаю таблицу и столбцы для таблицы
         ObservableList<cordsData> data = FXCollections.observableArrayList();
 
         TableColumn<cordsData, ImageView> imageColumn = new TableColumn<>("Image");
         imageColumn.setCellValueFactory(cellData -> cellData.getValue().imageProperty());
+        imageColumn.setMinWidth(210);
 
         TableColumn<cordsData, String> titleColumn = new TableColumn<>("Title");
         titleColumn.setCellValueFactory(cellData -> cellData.getValue().titleProperty());
+        titleColumn.setMinWidth(100);
 
         TableColumn<cordsData, String> cordsColumn = new TableColumn<>("Cords");
         cordsColumn.setCellValueFactory(cellData -> cellData.getValue().cordsProperty());
+        cordsColumn.setMinWidth(150);
 
         TableColumn<cordsData, Button> buttonsColumns = new TableColumn<>("Actions");
         buttonsColumns.setCellValueFactory(cellData -> cellData.getValue().buttonsProperty());
+        buttonsColumns.setMinWidth(150);
 
-        var b = new Button();
-        b.setText("Teleport");
-        b.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                if (FakeMain.isWindows){
-                    var processList = NativeWindowsManager.getAllProcess();
-                    var minecraftWindow = processList.stream().filter(p-> p.title.toLowerCase().contains("minecraft") && !p.title.toLowerCase().contains("manager")).findFirst().orElse(null);
-                    if (minecraftWindow != null){
-                        if (NativeWindowsManager.ActivateWindow(minecraftWindow)){
-                            try {
-                                Thread.sleep(1000);
-                            } catch (InterruptedException e) {
-                                // TODO Auto-generated catch block
-                                e.printStackTrace();
-                            }
-
-                            emu.press(KeyEvent.VK_T);
-                            emu.writeText("/tp -217.090 66.00 44.512", 100);
-                        }
-                        emu.press(KeyEvent.VK_ENTER);
-                    }                    
-                }
-                else{
-                    emu.setClipBoard("/tp -217.090 66.00 44.512");
-                    Alert al = new Alert(AlertType.INFORMATION);
-                    al.setTitle("Information");
-                    al.setContentText("Command for teleport was copied to your clipboard");
-                    al.setHeaderText(null);
-                    al.show();
-                }
-            }  
-        });
-
-
-        var image = new ImageView();
-        image.setImage(new Image(new File("screenshot.png").toURI().toString()));
-        image.setFitWidth(200);
-        image.setFitHeight(150);
-        data.add(new cordsData(image, "Home", "-217.090 66.00 44.512", b));
         table.getColumns().addAll(imageColumn, titleColumn, cordsColumn, buttonsColumns);
         table.setItems(data);
 
         tableBox.getChildren().add(table);
 
+        // запускаю поток который обновляет таблицу с коордианатами каждые 2 секунды
         shPool.scheduleAtFixedRate(new Updater(), 0, 2, TimeUnit.SECONDS);
     }
 
@@ -163,8 +122,7 @@ public class PrimaryController implements Initializable{
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
+                        Shared.printEr(e, "Can't sleep for some reason in {EnterCords}");
                     }
 
                     emu.press(KeyEvent.VK_T);
@@ -189,8 +147,10 @@ public class PrimaryController implements Initializable{
         public void run() {
             var data = ServerApi.getCords();
             if (data!=null){
+                
                 for (CordsModel model : data) {
-                    if (table.getItems().filtered(item->item.titleProperty().get() == model.title).size() == 0){
+                    if (table.getItems().filtered(item->item.titleProperty().get().equals(model.title)).isEmpty()){
+
                         BufferedImage image = ServerApi.getImage(model.imageName);
                         if (image != null){
 
