@@ -90,7 +90,7 @@ public class ServerApi {
         try {
             ImageIO.write(preview, "png", new File("preview.png"));
         } catch (IOException e) {
-            e.printStackTrace();
+            Shared.printEr(e, "Can't save image of preview");
             return false;
         }
 
@@ -105,6 +105,7 @@ public class ServerApi {
             String response = client.execute(request, new TextResponseHandler());
             System.out.println(response);
             if (response.toLowerCase().contains("true")){
+                
                 return true;
             }
             else{

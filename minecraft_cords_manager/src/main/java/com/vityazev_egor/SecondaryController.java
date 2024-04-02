@@ -73,7 +73,8 @@ public class SecondaryController implements Initializable {
             
         }
         else{
-            previewView.setImage(Shared.convertBufferedImage(emu.getScreenShot()));
+            preview = emu.getScreenShot();
+            previewView.setImage(Shared.convertBufferedImage(preview));
         }
 
     }
