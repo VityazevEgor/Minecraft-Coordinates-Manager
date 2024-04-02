@@ -33,7 +33,7 @@ public class FakeMain {
             }
             GlobalScreen.addNativeKeyListener(new KeyListener());
         }
-        App.main(args);
+        App.init(args);
     }
 
     @SuppressWarnings("unused")

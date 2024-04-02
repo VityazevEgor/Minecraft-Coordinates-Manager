@@ -4,7 +4,12 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import javax.imageio.ImageIO;
 
 import org.apache.hc.client5.http.classic.HttpClient;
@@ -37,6 +42,10 @@ public class ServerApi {
         public String imageName;
     }
 
+    private static final HttpClient client = HttpClients.createDefault();
+    private static final Path savePath = Paths.get(System.getProperty("user.home"), "Documents", "savedServerUrl.txt");
+    public static String serverUrl = "http://127.0.0.1:8080/";    
+
     public static class TextResponseHandler implements HttpClientResponseHandler<String>{
 
         @Override
@@ -59,8 +68,7 @@ public class ServerApi {
                 return result;
             }
             catch (Exception ex){
-                System.out.println("Can't desiaralize");
-                ex.printStackTrace();
+                Shared.printEr(ex, "Can't desiaralize answer from server");
                 return null;
             }
         }
@@ -77,8 +85,7 @@ public class ServerApi {
     }
 
     public static Boolean createCord(String title, String cords, BufferedImage preview){
-        HttpClient client = HttpClients.createDefault();
-        HttpPost request = new HttpPost("http://127.0.0.1:8080/create");
+        HttpPost request = new HttpPost(serverUrl + "create");
 
         try {
             ImageIO.write(preview, "png", new File("preview.png"));
@@ -110,32 +117,65 @@ public class ServerApi {
         
     }
 
+    // метод который проверяет доступен сервер или нет
+    public static Boolean checkIfServerAvaible(String testServerUrl){
+        HttpGet request = new HttpGet(testServerUrl);
+        try {
+            String response = client.execute(request, new TextResponseHandler());
+            System.out.println(response);
+            if (response.toLowerCase().contains("working")){
+                // если севере доступен то сохранить информацию о нём в файл
+                Files.writeString(savePath, testServerUrl);
+                serverUrl = testServerUrl;
+                return true;
+            }
+            else{
+                return false;
+            }
+        } catch (IOException e) {
+            Shared.printEr(e, "Error in sending request in {checkIfServerAvaible}");
+            return false;
+        }
+    }
+
     public static CordsModel[] getCords(){
-        HttpClient client = HttpClients.createDefault();
-        HttpGet request = new HttpGet("http://127.0.0.1:8080/getall");
+        HttpGet request = new HttpGet(URI.create(serverUrl + "getall"));
         
         try {
             CordsModel[] result = client.execute(request, new CordsListHandler());
             return result;
         } catch (IOException e) {
-            System.out.println("Error in senging rs");
-            e.printStackTrace();
+            Shared.printEr(e, "Can't get cords. Server url = "+serverUrl +". Request url = "+request.getRequestUri());
             return null;
         }
     }
 
     public static BufferedImage getImage(String imageName){
-        HttpClient client = HttpClients.createDefault();
-        HttpGet reques = new HttpGet("http://127.0.0.1:8080/image/" + imageName);
+        HttpGet reques = new HttpGet(serverUrl + "image/" + imageName);
 
         try{
             BufferedImage image = client.execute(reques, new ImageHandles());
             return image;
         }
         catch (Exception ex){
-            System.out.println("Can't get image");
-            ex.printStackTrace();
+            Shared.printEr(ex, "Can't get image from server");
             return null;
+        }
+    }
+
+    // метод, который проверяет есть ли в папке "Documents" файл под названием "savedServerUrl.txt" и если он есть то, записывает его значение в serverUrl
+    public static Boolean checkIfSavedServerUrlExists(){
+        if (Files.exists(savePath)){
+            try {
+               serverUrl = Files.readString(savePath);
+               return true;
+           } catch (IOException e) {
+               Shared.printEr(e, "Error in reading file in {checkIfSavedServerUrlExists}");
+               return false;
+           }
+        }
+        else{
+            return false;
         }
     }
 }

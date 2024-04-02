@@ -1,6 +1,8 @@
 package com.vityazev_egor;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
+
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelWriter;
@@ -27,6 +29,12 @@ public class Shared {
 
     public static void printEr(Exception ex, String message){
         System.out.println(redStart +"ERROR: "+message+" : "+ex.getMessage()+redEnd);
-        ex.printStackTrace();
+        // записывает все данные из ex.strackTrace и сохраняет их в файл lastError.txt в папке с программой
+        try {
+            java.io.PrintWriter pw = new java.io.PrintWriter(new File("lastError.txt"));
+            ex.printStackTrace(pw);
+            pw.close();
+        } catch (Exception e) {}
+
     }
 }

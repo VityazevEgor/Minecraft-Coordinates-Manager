@@ -19,7 +19,13 @@ public class App extends Application {
     @SuppressWarnings("exports")
     @Override
     public void start(Stage stage) throws IOException {
-        scene = new Scene(loadFXML("primary"));
+        ServerApi.checkIfSavedServerUrlExists();
+        if (ServerApi.checkIfServerAvaible(ServerApi.serverUrl)) {
+            scene = new Scene(loadFXML("primary"));
+        }
+        else{
+            scene = new Scene(loadFXML("settings"));
+        }
         _stage = stage;
         _stage.setScene(scene);
         //_stage.setResizable(false);
@@ -70,7 +76,7 @@ public class App extends Application {
         return fxmlLoader.load();
     }
 
-    public static void main(String[] args) {
+    public static void init(String[] args) {
         launch();
     }
 

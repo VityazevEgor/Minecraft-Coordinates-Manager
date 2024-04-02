@@ -103,8 +103,7 @@ public class Emulator {
                 return ImageIO.read(new File("screenshot.png"));
 
             } catch (IOException | InterruptedException ex) {
-                print("got error");
-                ex.printStackTrace();
+                Shared.printEr(ex, "Got error while making screenshot");
                 return null;
             }
         }
