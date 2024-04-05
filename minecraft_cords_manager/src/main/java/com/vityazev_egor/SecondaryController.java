@@ -109,8 +109,9 @@ public class SecondaryController implements Initializable {
     
 
     private String filterCords(String rawText){
-        if (!rawText.contains("/execute in minecraft:overworld run tp @s ")) return null;
+        if (!rawText.contains("/execute in minecraft:overworld run tp @s ") && !rawText.contains("/execute in minecraft:the_nether run tp @s ")) return null;
         rawText = rawText.replace("/execute in minecraft:overworld run tp @s ", "");
+        rawText = rawText.replace("/execute in minecraft:the_nether run tp @s ", "");
         String[] nums = rawText.split(" ");
         if (nums.length<5) return null;
         String result = "";
