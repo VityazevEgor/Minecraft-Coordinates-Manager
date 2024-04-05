@@ -27,6 +27,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 public class PrimaryController implements Initializable{
@@ -46,13 +47,13 @@ public class PrimaryController implements Initializable{
         private final ObjectProperty<ImageView> image;
         private final StringProperty title;
         private final StringProperty cords;
-        private final ObjectProperty<Button> buttons;
+        private final ObjectProperty<HBox> buttons;
 
-        public cordsData(ImageView image, String title, String cords, Button buttons){
+        public cordsData(ImageView image, String title, String cords, HBox buttons){
             this.image = new SimpleObjectProperty<ImageView>(image);
             this.title = new SimpleStringProperty(title);
             this.cords = new SimpleStringProperty(cords);
-            this.buttons = new SimpleObjectProperty<Button>(buttons);
+            this.buttons = new SimpleObjectProperty<HBox>(buttons);
         }
 
         public ObjectProperty<ImageView> imageProperty() {
@@ -67,7 +68,7 @@ public class PrimaryController implements Initializable{
             return cords;
         }
     
-        public ObjectProperty<Button> buttonsProperty() {
+        public ObjectProperty<HBox> buttonsProperty() {
             return buttons;
         }
     }
@@ -100,7 +101,7 @@ public class PrimaryController implements Initializable{
         cordsColumn.setCellValueFactory(cellData -> cellData.getValue().cordsProperty());
         cordsColumn.setMinWidth(150);
 
-        TableColumn<cordsData, Button> buttonsColumns = new TableColumn<>("Actions");
+        TableColumn<cordsData, HBox> buttonsColumns = new TableColumn<>("Actions");
         buttonsColumns.setCellValueFactory(cellData -> cellData.getValue().buttonsProperty());
         buttonsColumns.setMinWidth(150);
 
@@ -153,7 +154,6 @@ public class PrimaryController implements Initializable{
 
                         BufferedImage image = ServerApi.getImage(model.imageName);
                         if (image != null){
-
                             ImageView view = new ImageView();
                             view.setFitWidth(200);
                             view.setFitHeight(150);
@@ -167,8 +167,15 @@ public class PrimaryController implements Initializable{
                                 }
                                 
                             });
+                            var deleteButton = new Button();
+                            deleteButton.setText("Delete");
+
+                            HBox buttons = new HBox();
+                            buttons.getChildren().addAll(button, deleteButton);
+                            buttons.setSpacing(5);
+
                             view.setImage(Shared.convertBufferedImage(image));
-                            table.getItems().add(new cordsData(view, model.title, model.cords, button));
+                            table.getItems().add(new cordsData(view, model.title, model.cords, buttons));
                         }
                     }
                 }

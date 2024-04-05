@@ -15,6 +15,7 @@ import javax.imageio.ImageIO;
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.entity.mime.FileBody;
 import org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder;
 import org.apache.hc.client5.http.entity.mime.StringBody;
@@ -25,7 +26,7 @@ import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpException;
 import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
-
+import org.apache.hc.core5.util.Timeout;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -121,6 +122,10 @@ public class ServerApi {
     // метод который проверяет доступен сервер или нет
     public static Boolean checkIfServerAvaible(String testServerUrl){
         HttpGet request = new HttpGet(testServerUrl);
+
+        // код который устаналивает максимально время ожидания ответа на сверера в 4 секунды
+        RequestConfig rsConfig  = RequestConfig.custom().setConnectionRequestTimeout(Timeout.ofSeconds(3)).build();
+        request.setConfig(rsConfig);
         try {
             String response = client.execute(request, new TextResponseHandler());
             System.out.println(response);
@@ -168,7 +173,7 @@ public class ServerApi {
     public static Boolean checkIfSavedServerUrlExists(){
         if (Files.exists(savePath)){
             try {
-               serverUrl = Files.readString(savePath);
+               serverUrl = Files.readString(savePath).replace("\n", "");
                return true;
            } catch (IOException e) {
                Shared.printEr(e, "Error in reading file in {checkIfSavedServerUrlExists}");
