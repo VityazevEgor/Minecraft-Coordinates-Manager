@@ -10,6 +10,7 @@ module com.vityazev_egor {
     requires com.fasterxml.jackson.core;
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.annotation;
+    requires javafx.graphics;
 
     opens com.vityazev_egor to javafx.fxml;
     exports com.vityazev_egor;

@@ -20,16 +20,19 @@ public class App extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         ServerApi.checkIfSavedServerUrlExists();
+        System.out.println("\n\n\nPlease wait. I need to check if server is available");
         if (ServerApi.checkIfServerAvaible(ServerApi.serverUrl)) {
+            System.out.println("\n\n\nServer is available!");
             scene = new Scene(loadFXML("primary"));
         }
         else{
+            System.out.println("\n\n\nServer is not available");
             scene = new Scene(loadFXML("settings"));
         }
         _stage = stage;
         _stage.setScene(scene);
         //_stage.setResizable(false);
-        _stage.setMinWidth(720+10);
+        _stage.setMinWidth(720+50);
         _stage.setMinHeight(524+10);
 
         _stage.setTitle("Minecraft cords manager");

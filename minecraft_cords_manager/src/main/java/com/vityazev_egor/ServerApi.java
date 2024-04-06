@@ -119,6 +119,24 @@ public class ServerApi {
         
     }
 
+    // метод который отправляет на сервер запрос на удаление координат по id
+    public static Boolean deleteCords(Integer id){
+        HttpGet request = new HttpGet(serverUrl + "delete/"+id);
+        try {
+            String response = client.execute(request, new TextResponseHandler());
+            System.out.println(response);
+            if (response.toLowerCase().contains("true")){
+                return true;
+            }
+            else{
+                return false;
+            }
+        } catch (IOException e) {
+            Shared.printEr(e, "Error in sending request in {DeleteCord}");
+            return false;
+        }
+    }
+
     // метод который проверяет доступен сервер или нет
     public static Boolean checkIfServerAvaible(String testServerUrl){
         HttpGet request = new HttpGet(testServerUrl);
@@ -184,4 +202,5 @@ public class ServerApi {
             return false;
         }
     }
+    
 }

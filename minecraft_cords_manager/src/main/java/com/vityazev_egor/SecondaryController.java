@@ -96,6 +96,11 @@ public class SecondaryController implements Initializable {
             message.setContentText("The coordinates were successfully saved");
             message.setTitle("Done");
             message.show();
+            try {
+                App.setRoot("primary");
+            } catch (IOException e) {
+                Shared.printEr(e, "Can't load primary form");
+            }
         }
         else{
             var message = new Alert(AlertType.ERROR);

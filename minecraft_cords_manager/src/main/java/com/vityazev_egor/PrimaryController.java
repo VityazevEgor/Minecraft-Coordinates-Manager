@@ -4,6 +4,10 @@ import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -23,6 +27,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.Alert.AlertType;
@@ -43,6 +48,10 @@ public class PrimaryController implements Initializable{
     private final Emulator emu = new Emulator();
     private final ScheduledExecutorService shPool = Executors.newScheduledThreadPool(1);
 
+    // кеш картинок
+    private static HashMap<String, BufferedImage> imageCache = new HashMap<>();
+
+    // класс который представляет элемент в таблице
     private class cordsData{
         private final ObjectProperty<ImageView> image;
         private final StringProperty title;
@@ -103,15 +112,22 @@ public class PrimaryController implements Initializable{
 
         TableColumn<cordsData, HBox> buttonsColumns = new TableColumn<>("Actions");
         buttonsColumns.setCellValueFactory(cellData -> cellData.getValue().buttonsProperty());
-        buttonsColumns.setMinWidth(150);
+        buttonsColumns.setMinWidth(250);
 
         table.getColumns().addAll(imageColumn, titleColumn, cordsColumn, buttonsColumns);
         table.setItems(data);
 
+        // сделать так чтобы таблица растягивалось на всю ширину родительского блока
+        table.prefWidthProperty().bind(tableBox.widthProperty());
+        
+        // сделать так чтобы таблица растягивалось на всю высоту родительского блока
+        table.prefHeightProperty().bind(tableBox.heightProperty());
+
+
         tableBox.getChildren().add(table);
 
         // запускаю поток который обновляет таблицу с коордианатами каждые 2 секунды
-        shPool.scheduleAtFixedRate(new Updater(), 0, 2, TimeUnit.SECONDS);
+        shPool.scheduleAtFixedRate(new Updater(), 0, 10, TimeUnit.SECONDS);
     }
 
     private void EnterCords(String cords){
@@ -142,6 +158,7 @@ public class PrimaryController implements Initializable{
         }
     }
 
+    // класс который отвечает за обновление таблицы с координатами
     private class Updater implements Runnable{
 
         @Override
@@ -150,15 +167,33 @@ public class PrimaryController implements Initializable{
             if (data!=null){
                 
                 for (CordsModel model : data) {
+                    // Добовляю те координаты которые отсуствуют в таблице
                     if (table.getItems().filtered(item->item.titleProperty().get().equals(model.title)).isEmpty()){
 
-                        BufferedImage image = ServerApi.getImage(model.imageName);
+                        BufferedImage image = null;
+                        if (imageCache.containsKey(model.imageName)){
+                            image = imageCache.get(model.imageName);
+                        }else{
+                            image = ServerApi.getImage(model.imageName);
+                        }
+
                         if (image != null){
+                            // если картинка успешно была скачина и её нету в кеше картинок то добавить её туда
+                            if (!imageCache.containsKey(model.imageName)){
+                                imageCache.put(model.imageName, image);
+                            }
+
+                            // создаём превью
                             ImageView view = new ImageView();
                             view.setFitWidth(200);
                             view.setFitHeight(150);
+                            view.setImage(Shared.convertBufferedImage(image));
+
                             Button button = new Button();
                             button.setText("Teleport");
+                            // устанавливаю цвет фона кнопки на зёлёный
+                            button.setStyle("-fx-background-color: green;");
+
                             button.setOnAction(new EventHandler<ActionEvent>() {
 
                                 @Override
@@ -169,14 +204,71 @@ public class PrimaryController implements Initializable{
                             });
                             var deleteButton = new Button();
                             deleteButton.setText("Delete");
+                            // установить цвет фона кнопки красным
+                            deleteButton.setStyle("-fx-background-color: red;");
+                            deleteButton.setOnAction(new EventHandler<ActionEvent>() {
+
+                                @Override
+                                public void handle(ActionEvent arg0) {
+                                    // вывести сообщение с вопросом пользователю уверен ли он что он хочет удалить координаты
+                                    Alert al = new Alert(AlertType.CONFIRMATION);
+                                    al.setTitle("Confirmation");
+                                    al.setContentText("Are you sure you want to delete this coordinates?");
+                                    al.setHeaderText(null);
+                                    Optional<ButtonType> result = al.showAndWait();
+                                    if (result.get() == ButtonType.OK){
+                                        Boolean rsResult = ServerApi.deleteCords(model.id);
+                                        // если запрос был выполнен успешно то вывести сообщение об успехе
+                                        if (rsResult){
+                                            Alert al2 = new Alert(AlertType.INFORMATION);
+                                            al2.setTitle("Information");
+                                            al2.setContentText("Coordinates was deleted");
+                                            al2.setHeaderText(null);
+                                            al2.show();
+                                        } else {
+                                            Alert al2 = new Alert(AlertType.ERROR);
+                                            al2.setTitle("Error");
+                                            al2.setContentText("Can't delete coordinates");
+                                            al2.setHeaderText(null);
+                                            al2.show();
+                                        }
+
+                                    }
+                                }
+                                
+                            });
+
+                            var clipboardButton = new Button();
+                            clipboardButton.setText("Copy to clipboard");
+                            // установить цвет кнопки на оранжевы
+                            clipboardButton.setStyle("-fx-background-color: orange;");
+                            clipboardButton.setOnAction(new EventHandler<ActionEvent>() {
+                                @Override
+                                public void handle(ActionEvent arg0) {
+                                    emu.setClipBoard("/tp " + model.cords);
+                                    Alert al = new Alert(AlertType.INFORMATION);
+                                    al.setTitle("Information");
+                                    al.setContentText("Coordinates was copied to your clipboard");
+                                    al.setHeaderText(null);
+                                    al.show();
+                                }
+                                
+                            });
 
                             HBox buttons = new HBox();
-                            buttons.getChildren().addAll(button, deleteButton);
+                            buttons.getChildren().addAll(button, deleteButton, clipboardButton);
                             buttons.setSpacing(5);
 
-                            view.setImage(Shared.convertBufferedImage(image));
                             table.getItems().add(new cordsData(view, model.title, model.cords, buttons));
                         }
+                    }
+                }
+
+                // удалаем те элементы который есть в таблице, но которое отсуствуют на сервере
+                List<CordsModel> listData = Arrays.asList(data);
+                for (cordsData item : table.getItems()) {
+                    if (listData.stream().filter(model->model.title.equals(item.titleProperty().get())).count() == 0){
+                        table.getItems().remove(item);
                     }
                 }
             }
