@@ -73,6 +73,17 @@ public class SecondaryController extends CustomInit implements Initializable {
                         App.setVisible(true); 
                     });
                 }
+                else{
+                    Platform.runLater(()->{
+                        App.setVisible(true); 
+                        Alert alert = new Alert(AlertType.ERROR);
+                        alert.setTitle("Error");
+                        alert.setHeaderText("Can't get screen shot");
+                        alert.setContentText("Check console for debug information and lastError.txt file");
+                        alert.show();
+                    });
+                
+                }
             };
 
             // запускаем в отдельном потоке задачу для создания скриншота, которая выполниться через 200 секунд 

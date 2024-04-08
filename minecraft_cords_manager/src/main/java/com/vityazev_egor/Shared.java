@@ -27,8 +27,8 @@ public class Shared {
     public static synchronized String getLastMessage(){
         if (openMessages.size() > 0){
             OpenMessage firtsNotDoneMessage = openMessages.stream().filter(x -> x.isProcessed == false).findFirst().orElse(null);
-            if (firtsNotDoneMessage!= null){
-                System.out.println("Last message is: "+firtsNotDoneMessage.fxmlName);
+            if (firtsNotDoneMessage != null){
+                //System.out.println("Last message is: "+firtsNotDoneMessage.fxmlName);
                 return firtsNotDoneMessage.fxmlName;
             }
             else{

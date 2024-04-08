@@ -7,6 +7,7 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 
@@ -14,6 +15,9 @@ import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class Emulator {
     private Robot r;
@@ -76,8 +80,7 @@ public class Emulator {
             return (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
         }
         catch (Exception ex){
-            print("Can't get data from clipboard");
-            ex.printStackTrace();
+            Shared.printEr(ex, "Can't get data from clipboard");
             return "";
         }
     }
@@ -95,9 +98,10 @@ public class Emulator {
         }
         else{
             try {
+                Files.deleteIfExists(Paths.get("screenshot.png"));
                 ProcessBuilder pb = new ProcessBuilder("shutter", "-f", "-e", "-n", "-o", "screenshot.png");
                 Process p = pb.start();
-                p.waitFor();
+                p.waitFor(20, TimeUnit.SECONDS);
 
                 print("Made screenshot using shutter");
                 return ImageIO.read(new File("screenshot.png"));
