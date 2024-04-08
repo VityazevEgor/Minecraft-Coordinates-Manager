@@ -47,6 +47,7 @@ public class SecondaryController extends CustomInit implements Initializable {
 
     @Override
     public void init() {
+        // Emulator emu = new Emulator();
         String cords = filterCords(emu.getCords());
 
         if (cords != null && !cords.isEmpty() && !cords.isBlank()){
@@ -79,7 +80,8 @@ public class SecondaryController extends CustomInit implements Initializable {
             
         }
         else{
-            previewView.setImage(Shared.convertBufferedImage(emu.getScreenShot()));
+            preview = emu.getScreenShot();
+            previewView.setImage(Shared.convertBufferedImage(preview));
         }
     }
 
@@ -94,6 +96,7 @@ public class SecondaryController extends CustomInit implements Initializable {
 
     @FXML
     void createCords(ActionEvent event){
+        System.out.println("Sending cords");
         if (ServerApi.createCord(titleField.getText(), cordsField.getText(), preview)){
             var message = new Alert(AlertType.INFORMATION);
             message.setHeaderText(null);

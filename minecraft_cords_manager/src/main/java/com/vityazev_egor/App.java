@@ -67,8 +67,18 @@ public class App extends Application {
     }
 
     static void setRoot(String fxml) throws IOException {
-        _scene.setRoot(fxmls.get(fxml));
         Shared.addOpenMessage(fxml);
+        // если у нас открываеться вторая формы то мы в начале ждём пока она не скопирует координаты и только потом отображаем её. Иначе она не успеет их скопировать
+        if (fxml.equals("secondary")){
+            while (Shared.getLastMessage() != null) {
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    Shared.printEr(e, "Can't sleep");
+                }
+            }
+        }
+        _scene.setRoot(fxmls.get(fxml));
     }
 
     public static void setVisible(Boolean flag){
