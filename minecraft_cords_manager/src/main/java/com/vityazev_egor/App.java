@@ -10,27 +10,40 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 public class App extends Application {
 
-    private static Scene scene;
+    private static Scene _scene;
     private static Stage _stage;
+
+    private static HashMap<String, Parent> fxmls = new HashMap<>();
 
     @SuppressWarnings("exports")
     @Override
     public void start(Stage stage) throws IOException {
+        
+        System.out.println("Loading forms in chache");
+        fxmls.put("primary", loadFXML("primary")); 
+        fxmls.put("settings", loadFXML("settings"));
+        fxmls.put("secondary", loadFXML("secondary"));
+        System.out.println("Loaded forms in chache");
+
         ServerApi.checkIfSavedServerUrlExists();
         System.out.println("\n\n\nPlease wait. I need to check if server is available");
         if (ServerApi.checkIfServerAvaible(ServerApi.serverUrl)) {
             System.out.println("\n\n\nServer is available!");
-            scene = new Scene(loadFXML("primary"));
+            _scene = new Scene(fxmls.get("primary"));
+            Shared.addOpenMessage("primary");
         }
         else{
             System.out.println("\n\n\nServer is not available");
-            scene = new Scene(loadFXML("settings"));
+            _scene = new Scene(fxmls.get("settings"));
+            Shared.addOpenMessage("settings");
         }
+
         _stage = stage;
-        _stage.setScene(scene);
+        _stage.setScene(_scene);
         //_stage.setResizable(false);
         _stage.setMinWidth(720+50);
         _stage.setMinHeight(524+10);
@@ -49,10 +62,13 @@ public class App extends Application {
         
         // Это строчка делает так, чтобы даже после того как мы скрыли Stage приложение продолжало работать в фоновом режиме и Platform.runLater дальше работал
         Platform.setImplicitExit(false);
+
+        
     }
 
     static void setRoot(String fxml) throws IOException {
-        scene.setRoot(loadFXML(fxml));
+        _scene.setRoot(fxmls.get(fxml));
+        Shared.addOpenMessage(fxml);
     }
 
     public static void setVisible(Boolean flag){

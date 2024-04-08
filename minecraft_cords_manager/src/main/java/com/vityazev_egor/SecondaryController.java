@@ -18,7 +18,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.ImageView;
 
-public class SecondaryController implements Initializable {
+public class SecondaryController extends CustomInit implements Initializable {
 
     @FXML
     private TextField cordsField;
@@ -36,11 +36,17 @@ public class SecondaryController implements Initializable {
     private ScheduledExecutorService shPool = Executors.newScheduledThreadPool(1);
 
     private BufferedImage preview  = null;
+    
+    private Emulator emu = new Emulator();
 
     // method that gets data about cords
     @Override
     public void initialize(URL arg0, ResourceBundle arg1) {
-        var emu = new Emulator();
+        setUpInitTask("secondary", 80);
+    }
+
+    @Override
+    public void init() {
         String cords = filterCords(emu.getCords());
 
         if (cords != null && !cords.isEmpty() && !cords.isBlank()){
@@ -73,10 +79,8 @@ public class SecondaryController implements Initializable {
             
         }
         else{
-            preview = emu.getScreenShot();
-            previewView.setImage(Shared.convertBufferedImage(preview));
+            previewView.setImage(Shared.convertBufferedImage(emu.getScreenShot()));
         }
-
     }
 
     @FXML
@@ -114,7 +118,9 @@ public class SecondaryController implements Initializable {
     
 
     private String filterCords(String rawText){
-        if (!rawText.contains("/execute in minecraft:overworld run tp @s ") && !rawText.contains("/execute in minecraft:the_nether run tp @s ")) return null;
+        if (!rawText.contains("/execute in minecraft:overworld run tp @s ") && !rawText.contains("/execute in minecraft:the_nether run tp @s ")){
+            Shared.printEr(null, "Filter cords error");
+        }
         rawText = rawText.replace("/execute in minecraft:overworld run tp @s ", "");
         rawText = rawText.replace("/execute in minecraft:the_nether run tp @s ", "");
         String[] nums = rawText.split(" ");
@@ -140,4 +146,6 @@ public class SecondaryController implements Initializable {
             return false;
         }
     }
+
+    
 }

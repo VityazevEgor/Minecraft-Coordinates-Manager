@@ -10,7 +10,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 
-public class SettingsController implements Initializable {
+public class SettingsController extends CustomInit implements Initializable {
     @FXML
     private Button testSaveButton;
 
@@ -44,6 +44,12 @@ public class SettingsController implements Initializable {
                 alert.showAndWait();
             }
         });
+        setUpInitTask("settings", 90);
+    }
+
+    @Override
+    public void init() {
+        return;
     }
     
 }

@@ -5,7 +5,6 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -35,7 +34,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
-public class PrimaryController implements Initializable{
+public class PrimaryController extends CustomInit implements Initializable{
 
     @FXML
     private Button createNewButton;
@@ -47,9 +46,7 @@ public class PrimaryController implements Initializable{
 
     private final Emulator emu = new Emulator();
     private final ScheduledExecutorService shPool = Executors.newScheduledThreadPool(1);
-
-    // кеш картинок
-    private static HashMap<String, BufferedImage> imageCache = new HashMap<>();
+    private static Boolean isThreadRunning = false;
 
     // класс который представляет элемент в таблице
     private class cordsData{
@@ -126,8 +123,7 @@ public class PrimaryController implements Initializable{
 
         tableBox.getChildren().add(table);
 
-        // запускаю поток который обновляет таблицу с коордианатами каждые 2 секунды
-        shPool.scheduleAtFixedRate(new Updater(), 0, 10, TimeUnit.SECONDS);
+        setUpInitTask("primary", 50);
     }
 
     private void EnterCords(String cords){
@@ -170,18 +166,9 @@ public class PrimaryController implements Initializable{
                     // Добовляю те координаты которые отсуствуют в таблице
                     if (table.getItems().filtered(item->item.titleProperty().get().equals(model.title)).isEmpty()){
 
-                        BufferedImage image = null;
-                        if (imageCache.containsKey(model.imageName)){
-                            image = imageCache.get(model.imageName);
-                        }else{
-                            image = ServerApi.getImage(model.imageName);
-                        }
+                        BufferedImage image = ServerApi.getImage(model.imageName);
 
                         if (image != null){
-                            // если картинка успешно была скачина и её нету в кеше картинок то добавить её туда
-                            if (!imageCache.containsKey(model.imageName)){
-                                imageCache.put(model.imageName, image);
-                            }
 
                             // создаём превью
                             ImageView view = new ImageView();
@@ -276,5 +263,14 @@ public class PrimaryController implements Initializable{
 
 
         
+    }
+
+    @Override
+    public void init() {
+        if (isThreadRunning == false){
+            // запускаю поток который обновляет таблицу с коордианатами каждые 2 секунды
+            shPool.scheduleAtFixedRate(new Updater(), 0, 10, TimeUnit.SECONDS);
+            isThreadRunning = true;
+        }
     }
 }
