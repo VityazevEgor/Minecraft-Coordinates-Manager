@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class Emulator {
@@ -90,7 +89,6 @@ public class Emulator {
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(content, content);
     }
 
-    @SuppressWarnings("exports")
     public BufferedImage getScreenShot(){
         if (FakeMain.isWindows){
             var screenSize = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());

@@ -9,7 +9,6 @@ import javafx.application.Platform;
 
 public class KeyListener implements NativeKeyListener {
     
-    @SuppressWarnings("exports")
     @Override
     public void nativeKeyPressed(NativeKeyEvent e){
         print(("Key Pressed: " + NativeKeyEvent.getKeyText(e.getKeyCode())));

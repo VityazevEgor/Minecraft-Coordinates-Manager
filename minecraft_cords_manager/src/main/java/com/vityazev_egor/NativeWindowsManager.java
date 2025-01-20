@@ -11,7 +11,6 @@ import com.sun.jna.platform.win32.WinUser;
 import com.sun.jna.win32.StdCallLibrary;
 
 // класс который может управлять окнами на виндовс
-@SuppressWarnings("exports")
 public class NativeWindowsManager {
 
     public interface User32 extends StdCallLibrary {

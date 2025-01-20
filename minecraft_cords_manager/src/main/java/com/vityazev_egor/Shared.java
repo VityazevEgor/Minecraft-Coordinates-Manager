@@ -60,7 +60,6 @@ public class Shared {
     private static final String redStart = "\u001B[31m";
     private static final String redEnd = "\u001B[0m";
 
-    @SuppressWarnings("exports")
     public static Image convertBufferedImage(BufferedImage toConvert){
         WritableImage wi = new WritableImage(toConvert.getWidth(), toConvert.getHeight());
 

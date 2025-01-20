@@ -19,7 +19,6 @@ public class App extends Application {
 
     private static HashMap<String, Parent> fxmls = new HashMap<>();
 
-    @SuppressWarnings("exports")
     @Override
     public void start(Stage stage) throws IOException {
         

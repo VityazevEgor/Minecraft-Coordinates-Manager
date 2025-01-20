@@ -30,7 +30,6 @@ import org.apache.hc.core5.util.Timeout;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-@SuppressWarnings("exports")
 public class ServerApi {
 
     public static class CordsModel{
