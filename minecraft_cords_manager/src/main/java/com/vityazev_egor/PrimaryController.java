@@ -1,19 +1,17 @@
 package com.vityazev_egor;
 
 import java.awt.event.KeyEvent;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import com.vityazev_egor.ServerApi.CordsModel;
-
+import com.vityazev_egor.Modules.Emulator;
+import com.vityazev_egor.Modules.NativeWindowsManager;
+import com.vityazev_egor.Modules.ServerApi;
+import com.vityazev_egor.Modules.Shared;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -45,8 +43,19 @@ public class PrimaryController extends CustomInit implements Initializable{
     private TableView<cordsData> table = new TableView<>();
 
     private final Emulator emu = new Emulator();
-    private final ScheduledExecutorService shPool = Executors.newScheduledThreadPool(1);
+    private final ScheduledExecutorService shPool = Executors.newSingleThreadScheduledExecutor();
+    private ServerApi api;
     private static Boolean isThreadRunning = false;
+
+    public PrimaryController() {
+        super("primary");
+        try{
+            api = new ServerApi();
+        } catch(Exception ex){
+            Shared.printEr(ex, "For some reason i can't creare ServerApi object");
+            System.exit(1);
+        }
+    }
 
     // класс который представляет элемент в таблице
     private class cordsData{
@@ -81,11 +90,7 @@ public class PrimaryController extends CustomInit implements Initializable{
 
     @FXML
     void openScForm(ActionEvent event) {
-        try {
-            App.setRoot("secondary");
-        } catch (IOException e) {
-            Shared.printEr(e, "Can't open secondary form");
-        }
+        App.setRoot("secondary");
     }
 
     @SuppressWarnings("unchecked")
@@ -122,8 +127,6 @@ public class PrimaryController extends CustomInit implements Initializable{
 
 
         tableBox.getChildren().add(table);
-
-        setUpInitTask("primary", 50);
     }
 
     private void EnterCords(String cords){
@@ -159,36 +162,32 @@ public class PrimaryController extends CustomInit implements Initializable{
 
         @Override
         public void run() {
-            var data = ServerApi.getCords();
-            if (data!=null){
-                
-                for (CordsModel model : data) {
-                    // Добовляю те координаты которые отсуствуют в таблице
-                    if (table.getItems().filtered(item->item.titleProperty().get().equals(model.title)).isEmpty()){
-
-                        BufferedImage image = ServerApi.getImage(model.imageName);
-
-                        if (image != null){
-
+            var data = api.getAllCords();
+            if (data.size() == 0) return;
+            data.forEach(model ->{
+                if (table.getItems().stream().noneMatch(item->item.titleProperty().get().equals(model.getTitle()))){
+                    api.getPreview(model.getImageName()).ifPresentOrElse(
+                        image ->{
                             // создаём превью
                             ImageView view = new ImageView();
                             view.setFitWidth(200);
                             view.setFitHeight(150);
                             view.setImage(Shared.convertBufferedImage(image));
 
+                            // создаю кнопку для телепортации
                             Button button = new Button();
                             button.setText("Teleport");
                             // устанавливаю цвет фона кнопки на зёлёный
                             button.setStyle("-fx-background-color: green;");
-
                             button.setOnAction(new EventHandler<ActionEvent>() {
 
                                 @Override
                                 public void handle(ActionEvent arg0) {
-                                    EnterCords(model.cords);
+                                    EnterCords(model.getCords());
                                 }
                                 
                             });
+                            
                             var deleteButton = new Button();
                             deleteButton.setText("Delete");
                             // установить цвет фона кнопки красным
@@ -204,9 +203,8 @@ public class PrimaryController extends CustomInit implements Initializable{
                                     al.setHeaderText(null);
                                     Optional<ButtonType> result = al.showAndWait();
                                     if (result.get() == ButtonType.OK){
-                                        Boolean rsResult = ServerApi.deleteCords(model.id);
                                         // если запрос был выполнен успешно то вывести сообщение об успехе
-                                        if (rsResult){
+                                        if (api.deleteCord(model.getId())){
                                             Alert al2 = new Alert(AlertType.INFORMATION);
                                             al2.setTitle("Information");
                                             al2.setContentText("Coordinates was deleted");
@@ -232,7 +230,7 @@ public class PrimaryController extends CustomInit implements Initializable{
                             clipboardButton.setOnAction(new EventHandler<ActionEvent>() {
                                 @Override
                                 public void handle(ActionEvent arg0) {
-                                    emu.setClipBoard("/tp " + model.cords);
+                                    emu.setClipBoard("/tp " + model.getCords());
                                     Alert al = new Alert(AlertType.INFORMATION);
                                     al.setTitle("Information");
                                     al.setContentText("Coordinates was copied to your clipboard");
@@ -246,23 +244,22 @@ public class PrimaryController extends CustomInit implements Initializable{
                             buttons.getChildren().addAll(button, deleteButton, clipboardButton);
                             buttons.setSpacing(5);
 
-                            table.getItems().add(new cordsData(view, model.title, model.cords, buttons));
-                        }
-                    }
+                            table.getItems().add(new cordsData(view, model.getTitle(), model.getCords(), buttons));
+                        }, 
+                        () -> Shared.printEr(null, "Can't get preview")
+                    );
                 }
 
-                // удалаем те элементы который есть в таблице, но которое отсуствуют на сервере
-                List<CordsModel> listData = Arrays.asList(data);
-                for (cordsData item : table.getItems()) {
-                    if (listData.stream().filter(model->model.title.equals(item.titleProperty().get())).count() == 0){
-                        table.getItems().remove(item);
-                    }
+            
+            });
+            
+            // удалаем те элементы который есть в таблице, но которое отсуствуют на сервере
+            for (cordsData item : table.getItems()) {
+                if (data.stream().noneMatch(model->model.getTitle().equals(item.titleProperty().get()))){
+                    table.getItems().remove(item);
                 }
             }
-        }
-
-
-        
+        }        
     }
 
     @Override

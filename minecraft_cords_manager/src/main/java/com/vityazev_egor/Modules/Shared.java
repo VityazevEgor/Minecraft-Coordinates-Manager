@@ -1,4 +1,4 @@
-package com.vityazev_egor;
+package com.vityazev_egor.Modules;
 
 import java.awt.image.BufferedImage;
 import java.io.File;

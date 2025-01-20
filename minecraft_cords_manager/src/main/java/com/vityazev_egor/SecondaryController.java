@@ -4,9 +4,9 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import com.vityazev_egor.Modules.Emulator;
+import com.vityazev_egor.Modules.ServerApi;
+import com.vityazev_egor.Modules.Shared;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -22,27 +22,33 @@ public class SecondaryController extends CustomInit implements Initializable {
 
     @FXML
     private TextField cordsField;
-
     @FXML
     private TextField titleField;
-
     @FXML
     private ImageView previewView;
-
     @FXML
     private Button createButton;
 
-    // пул потоков который могут выполнять с определённо задрежкой
-    private ScheduledExecutorService shPool = Executors.newScheduledThreadPool(1);
-
-    private BufferedImage preview  = null;
-    
+    private BufferedImage preview  = null;    
     private Emulator emu = new Emulator();
+    private ServerApi api;
+
 
     // method that gets data about cords
+
+    public SecondaryController() {
+        super("secondary");
+        try{
+            api = new ServerApi();
+        }catch (IOException ex){
+            Shared.printEr(ex, "Can't init server api");
+            System.exit(1);
+        }
+    }
+
     @Override
     public void initialize(URL arg0, ResourceBundle arg1) {
-        setUpInitTask("secondary", 80);
+        return;
     }
 
     @Override
@@ -59,36 +65,24 @@ public class SecondaryController extends CustomInit implements Initializable {
 
         if (!FakeMain.isWindows){
             // создаём поток который делает скриншот и устаналивает его в имдж ваев
-            Runnable getSc = () ->{
+
+            preview = emu.getScreenShot();
+            if (preview != null){
+                var screen = Shared.convertBufferedImage(preview);
+
                 Platform.runLater(()->{
-                    App.setVisible(false);  
+                    previewView.setImage(screen);
                 });
-
-                preview = emu.getScreenShot();
-                if (preview != null){
-                    var screen = Shared.convertBufferedImage(preview);
-
-                    Platform.runLater(()->{
-                        previewView.setImage(screen);
-                        App.setVisible(true); 
-                    });
-                }
-                else{
-                    Platform.runLater(()->{
-                        App.setVisible(true); 
-                        Alert alert = new Alert(AlertType.ERROR);
-                        alert.setTitle("Error");
-                        alert.setHeaderText("Can't get screen shot");
-                        alert.setContentText("Check console for debug information and lastError.txt file");
-                        alert.show();
-                    });
-                
-                }
-            };
-
-            // запускаем в отдельном потоке задачу для создания скриншота, которая выполниться через 200 секунд 
-            shPool.schedule(getSc, 200, TimeUnit.MILLISECONDS);
-            
+            }
+            else{
+                Platform.runLater(()->{
+                    Alert alert = new Alert(AlertType.ERROR);
+                    alert.setTitle("Error");
+                    alert.setHeaderText("Can't get screen shot");
+                    alert.setContentText("Check console for debug information and lastError.txt file");
+                    alert.show();
+                });
+            }
         }
         else{
             preview = emu.getScreenShot();
@@ -98,27 +92,19 @@ public class SecondaryController extends CustomInit implements Initializable {
 
     @FXML
     void loadPmForm(ActionEvent event) {
-        try {
-            App.setRoot("primary");
-        } catch (IOException e) {
-            System.out.println("Can't load primary form");
-        }
+        App.setRoot("primary");
     }
 
     @FXML
     void createCords(ActionEvent event){
         System.out.println("Sending cords");
-        if (ServerApi.createCord(titleField.getText(), cordsField.getText(), preview)){
+        if (api.createCord(titleField.getText(), cordsField.getText(), preview)){
             var message = new Alert(AlertType.INFORMATION);
             message.setHeaderText(null);
             message.setContentText("The coordinates were successfully saved");
             message.setTitle("Done");
             message.show();
-            try {
-                App.setRoot("primary");
-            } catch (IOException e) {
-                Shared.printEr(e, "Can't load primary form");
-            }
+            App.setRoot("primary");
         }
         else{
             var message = new Alert(AlertType.ERROR);

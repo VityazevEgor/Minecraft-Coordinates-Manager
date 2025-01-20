@@ -5,50 +5,44 @@ import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
+import java.awt.Dimension;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import com.vityazev_egor.Modules.Shared;
+import com.vityazev_egor.Scenes.ICustomScene;
+import com.vityazev_egor.Scenes.MyCordsPage;
+import com.vityazev_egor.Scenes.SettingsPage;
+
+import atlantafx.base.theme.PrimerDark;
 
 public class App extends Application {
 
-    private static Scene _scene;
-    private static Stage _stage;
+    private Stage currentStage;
+    private final Map<String, ICustomScene> fxmls = Map.of(
+        SettingsPage.class.getName(), new SettingsPage(this),
+        MyCordsPage.class.getName(), new MyCordsPage(this)
+    );
+    private final Dimension defaultSize = new Dimension(720+50, 524+10);
 
-    private static HashMap<String, Parent> fxmls = new HashMap<>();
+    private static ExecutorService executor = Executors.newSingleThreadExecutor();
 
     @Override
     public void start(Stage stage) throws IOException {
-        
-        System.out.println("Loading forms in chache");
-        fxmls.put("primary", loadFXML("primary")); 
-        fxmls.put("settings", loadFXML("settings"));
-        fxmls.put("secondary", loadFXML("secondary"));
-        System.out.println("Loaded forms in chache");
-
-        ServerApi.checkIfSavedServerUrlExists();
-        System.out.println("\n\n\nPlease wait. I need to check if server is available");
-        if (ServerApi.checkIfServerAvaible(ServerApi.serverUrl)) {
-            System.out.println("\n\n\nServer is available!");
-            _scene = new Scene(fxmls.get("primary"));
-            Shared.addOpenMessage("primary");
-        }
-        else{
-            System.out.println("\n\n\nServer is not available");
-            _scene = new Scene(fxmls.get("settings"));
-            Shared.addOpenMessage("settings");
-        }
-
-        _stage = stage;
-        _stage.setScene(_scene);
+        Application.setUserAgentStylesheet(new PrimerDark().getUserAgentStylesheet());
+        currentStage = stage;
+        currentStage.setScene(fxmls.get(SettingsPage.class.getName()).getScene());
         //_stage.setResizable(false);
-        _stage.setMinWidth(720+50);
-        _stage.setMinHeight(524+10);
+        // currentStage.setMinWidth(720+50);
+        // currentStage.setMinHeight(524+10);
 
-        _stage.setTitle("Minecraft cords manager");
-        _stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+        currentStage.setTitle("Minecraft cords manager");
+        currentStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 
             @Override
             public void handle(WindowEvent arg0) {
@@ -57,46 +51,69 @@ public class App extends Application {
             }
             
         });
-        _stage.show();
-        
+        currentStage.show();
         // Это строчка делает так, чтобы даже после того как мы скрыли Stage приложение продолжало работать в фоновом режиме и Platform.runLater дальше работал
         Platform.setImplicitExit(false);
-
-        
     }
 
-    static void setRoot(String fxml) throws IOException {
-        Shared.addOpenMessage(fxml);
-        // если у нас открываеться вторая формы то мы в начале ждём пока она не скопирует координаты и только потом отображаем её. Иначе она не успеет их скопировать
-        if (fxml.equals("secondary")){
-            while (Shared.getLastMessage() != null) {
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException e) {
-                    Shared.printEr(e, "Can't sleep");
-                }
-            }
+    public void openPage(String pageClassName){
+        if (!fxmls.containsKey(pageClassName)){
+            return;
         }
-        _scene.setRoot(fxmls.get(fxml));
+        currentStage.hide();
+        var page = fxmls.get(pageClassName);
+        currentStage.setScene(page.getScene());
+        executor.submit(() -> {
+            page.beforeShow();
+            Platform.runLater(() -> {
+                currentStage.show();
+                currentStage.toFront();
+                currentStage.requestFocus();
+
+                page.getMinSize().ifPresentOrElse(size ->{
+                    currentStage.setMinWidth(size.getWidth());
+                    currentStage.setMinHeight(size.getHeight());
+                },
+                () -> {
+                    currentStage.setMinWidth(defaultSize.getWidth());
+                    currentStage.setMinHeight(defaultSize.getHeight());
+                });
+            });
+        });
+    }
+
+    public static void setRoot(String fxml){
+        setVisible(false);
+        Shared.addOpenMessage(fxml);
+        executor.submit(() -> {
+            while (Shared.getLastMessage() != null) {
+                try{
+                    Thread.sleep(50);
+                }
+                catch (InterruptedException e){}
+            }
+            //SCENE.setRoot(fxmls.get(fxml));
+            Platform.runLater(() -> setVisible(true));
+        });
     }
 
     public static void setVisible(Boolean flag){
-        if (_stage == null){
-            return;
-        }
-        if (flag){
-            _stage.show();
-            _stage.toFront();
-            _stage.requestFocus();
-        }
-        else{
-            _stage.hide();
-        }
-        
+        // if (currentStage == null){
+        //     return;
+        // }
+        // if (flag){
+        //     currentStage.show();
+        //     currentStage.toFront();
+        //     currentStage.requestFocus();
+        // }
+        // else{
+        //     currentStage.hide();
+        // }
+        return;
     }
 
     public static Boolean getVisible(){
-        return _stage.isShowing();
+        return true;
     }
 
     private static Parent loadFXML(String fxml) throws IOException {

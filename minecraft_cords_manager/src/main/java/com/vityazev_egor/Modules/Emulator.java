@@ -1,4 +1,4 @@
-package com.vityazev_egor;
+package com.vityazev_egor.Modules;
 
 import java.awt.AWTException;
 import java.awt.Rectangle;
@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
+
+import com.vityazev_egor.FakeMain;
 
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;

@@ -1,9 +1,8 @@
-package com.vityazev_egor;
-
-import java.io.IOException;
+package com.vityazev_egor.Modules;
 
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
+import com.vityazev_egor.App;
 
 import javafx.application.Platform;
 
@@ -17,14 +16,9 @@ public class KeyListener implements NativeKeyListener {
 
             System.out.println("Dected HOME press");
             Platform.runLater(()->{
-                try {
-                    App.setRoot("primary");
-                    print("Visible state = " + App.getVisible());
-                    App.setVisible(!App.getVisible());
-                } catch (IOException e1) {
-                    print("Can't load form");
-                    e1.printStackTrace();
-                }
+                //App.setRoot("primary");
+                print("Visible state = " + App.getVisible());
+                App.setVisible(!App.getVisible());
             });
 
         }
@@ -33,13 +27,8 @@ public class KeyListener implements NativeKeyListener {
 
             print("Detcted insert key");
             Platform.runLater(()->{
-                try{
-                    App.setRoot("secondary");
-                    App.setVisible(true);
-                }
-                catch (IOException ex){
-                    print("Can't load secondary form");
-                }
+                //App.setRoot("secondary");
+                App.setVisible(true);
             });
         }
 

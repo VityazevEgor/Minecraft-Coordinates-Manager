@@ -3,6 +3,8 @@ package com.vityazev_egor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
+import com.vityazev_egor.Modules.Shared;
+
 // класс который используется для релизации собственного способа выполнять код при окрытие формы
 public abstract class CustomInit {
     
@@ -23,8 +25,17 @@ public abstract class CustomInit {
         }
     }
 
-    public void setUpInitTask(String fxmlName, int interval) {
+    private void setUpInitTask(String fxmlName, int interval) {
         this.fxmlName = fxmlName;
-        executorService.scheduleAtFixedRate(new InitTask(), interval, interval, java.util.concurrent.TimeUnit.MILLISECONDS);
+        executorService.scheduleWithFixedDelay(
+            new InitTask(), 
+            interval, 
+            interval, 
+            java.util.concurrent.TimeUnit.MILLISECONDS
+        );
+    }
+
+    public CustomInit(String fxmlName) {
+        setUpInitTask(fxmlName, 100);
     }
 }
