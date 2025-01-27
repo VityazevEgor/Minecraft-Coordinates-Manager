@@ -1,12 +1,13 @@
 package com.vityazev_egor.Scenes;
 
 import java.awt.Dimension;
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 import com.vityazev_egor.App;
-import javafx.application.Platform;
+import com.vityazev_egor.Modules.Shared;
+
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -31,10 +32,12 @@ public class SettingsPage implements ICustomScene{
 
         var createNewButton = new Button("Test and save!");
         createNewButton.setMnemonicParsing(false);
-        createNewButton.setOnAction(event -> app.openPage(MyCordsPage.class.getName())); // Метод нужно реализовать
+        createNewButton.setOnAction(event -> testServerButton()); // Метод нужно реализовать
 
         label = new Label("Enter server url");
         textField = new TextField();
+        textField.setPromptText("Example: http://127.0.0.1:8080/");
+        textField.setText(app.getServerApi().getServerUrl());
 
         var tableBox = new VBox();
         tableBox.setSpacing(10.0);
@@ -45,20 +48,30 @@ public class SettingsPage implements ICustomScene{
 
         root.getChildren().add(tableBox);
         this.scene = new Scene(root);
+    }
 
-        new Thread(() -> {
-            while (true) {
-                Platform.runLater(()-> label.setText(LocalDateTime.now().toString()));
-                try{
-                    Thread.sleep(100);
-                }catch (Exception ex){};   
-            }
-        }).start();
+    private void testServerButton(){
+        app.getServerApi().setServerUrl(textField.getText());
+        if (app.getServerApi().isServerAlive() && textField.getText().endsWith("/")){
+            app.openPage(MyCordsPage.class.getName());
+        }
+        else{
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("ERROR!");
+            alert.setHeaderText("Server is not alive or URL is incorrect");
+            //alert.setContentText(ex.getMessage());
+            alert.showAndWait();
+        }
     }
 
     @Override
     public void beforeShow() {
         return;
+        // for some reason this code is not working as expected
+        // System.out.println("Server status = " + app.getServerApi().isServerAlive());
+        // if (app.getServerApi().isServerAlive()){
+        //     app.openPage(MyCordsPage.class.getName());
+        // }
     }
 
     @Override

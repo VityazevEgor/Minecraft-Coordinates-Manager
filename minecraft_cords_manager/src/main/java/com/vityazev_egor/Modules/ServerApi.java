@@ -43,7 +43,9 @@ public class ServerApi {
     private final OkHttpClient client = new OkHttpClient();
     private final ObjectMapper mapper = new ObjectMapper();
     private final Path savePath = Paths.get(System.getProperty("user.home"), "Documents", "savedServerUrl.txt");
-    private final String serverUrl;
+    @Getter
+    @Setter
+    private String serverUrl = "http://127.0.0.1:8080/";
 
     public ServerApi(String serverUrl){
         this.serverUrl = serverUrl;
@@ -54,8 +56,12 @@ public class ServerApi {
         }
     }
 
-    public ServerApi() throws IOException{
-        serverUrl = new String(Files.readAllBytes(savePath), StandardCharsets.UTF_8);
+    public ServerApi(){
+        try{
+            serverUrl = new String(Files.readAllBytes(savePath), StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            Shared.printEr(e, "Can't read server url");
+        }
     }
 
     public Boolean isServerAlive(){
@@ -102,7 +108,7 @@ public class ServerApi {
     public Boolean deleteCord(Integer id){
         Request request = new Request.Builder()
             .url(serverUrl + "delete/" + id)
-            .delete()
+            .get()
             .build();
 
         try(Response response = client.newCall(request).execute()){

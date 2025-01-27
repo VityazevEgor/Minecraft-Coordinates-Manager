@@ -1,6 +1,7 @@
 package com.vityazev_egor.Scenes;
 
 import java.awt.Dimension;
+import java.awt.event.KeyEvent;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -10,7 +11,10 @@ import org.kordamp.ikonli.feather.Feather;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import com.vityazev_egor.App;
+import com.vityazev_egor.FakeMain;
 import com.vityazev_egor.Models.TableEntity;
+import com.vityazev_egor.Modules.Emulator;
+import com.vityazev_egor.Modules.NativeWindowsManager;
 import com.vityazev_egor.Modules.ServerApi;
 import com.vityazev_egor.Modules.Shared;
 
@@ -19,6 +23,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TableColumn;
@@ -35,20 +40,29 @@ public class MyCordsPage implements ICustomScene{
     private final Scene scene;
     private final TableView<TableEntity> table = new TableView<>();
     private final ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-    private final ServerApi api = new ServerApi("http://127.0.0.1:8080/");
+    private final Emulator emulator = new Emulator();
+    private final ServerApi api;
 
     public MyCordsPage(App app) {
         this.app = app;
+        this.api = app.getServerApi();
 
         final var root = new VBox();
 
         final var deleteButton = new Button("Delete", new FontIcon(Feather.DELETE));
         deleteButton.getStyleClass().add(Styles.DANGER);
+        deleteButton.setOnAction(event -> deleteCordinates());
+
+        final var enterCordsButton = new Button("Enter cords", new FontIcon(Feather.CLIPBOARD));
+        enterCordsButton.setOnAction(event -> enterCoordinates());
+
+        final var addCordsButton = new Button("Add new coordinates", new FontIcon(Feather.PLUS));
+        addCordsButton.setOnAction(event -> app.openPage(AddCordsPage.class.getName()));
 
         final var toolbar = new ToolBar(
-            new Button("Add new coordinates", new FontIcon(Feather.PLUS)),
+            addCordsButton,
             new Separator(Orientation.VERTICAL),
-            new Button("Copy to clipboard", new FontIcon(Feather.CLIPBOARD)),
+            enterCordsButton,
             deleteButton
         );
 
@@ -92,6 +106,40 @@ public class MyCordsPage implements ICustomScene{
         this.scene = new Scene(root);
     }
 
+    private void deleteCordinates(){
+        TableEntity selectedRecord = table.getSelectionModel().getSelectedItem();
+        if (api.deleteCord(selectedRecord.getId())){
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Success!");
+            alert.setHeaderText("Coordinates were deleted succesfully");
+            alert.showAndWait();
+        }
+        else{
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error!");
+            alert.setHeaderText("Coordinates were not deleted");
+            alert.showAndWait();
+        }
+    }
+
+    private void enterCoordinates(){
+        String tpCommand = String.format("/tp %s", table.getSelectionModel().getSelectedItem().getCords().get());
+        emulator.setClipBoard(tpCommand);
+        if (NativeWindowsManager.activateWindow("Minecraft ")){
+            Shared.sleep(2000);
+            emulator.press(KeyEvent.VK_T);
+            emulator.writeText(tpCommand, 100);
+            emulator.press(KeyEvent.VK_ENTER);
+        }
+        else{
+            Alert al = new Alert(Alert.AlertType.ERROR);
+            al.setTitle("Error");
+            al.setContentText("Can't activate Minecraft window");
+            al.setHeaderText(null);
+            al.show();
+        }
+    }
+
     private void updateData(){
         var data = api.getAllCords();
         if (data.size() == 0) return;
@@ -117,6 +165,9 @@ public class MyCordsPage implements ICustomScene{
                 );
             }            
         });
+        
+        // удаляем те записи, которых нету в ответе от сервера
+        table.getItems().removeIf(item -> data.stream().noneMatch(model->model.getTitle().equals(item.getTitle().get())));
     }
 
     @Override

@@ -12,6 +12,12 @@ import javafx.scene.image.WritableImage;
 
 public class Shared {
 
+    public static class CustomException extends Exception {
+        public CustomException(String message){
+            super(message);
+        }
+    }
+
     // методы и классы которы отвечают за обмен сообщениями между контролерами
     private static class OpenMessage{
         public String fxmlName;
@@ -89,5 +95,13 @@ public class Shared {
             } catch (Exception e) {}
         }
 
+    }
+
+    public static void sleep(long milis){
+        try {
+            Thread.sleep(milis);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }    
     }
 }

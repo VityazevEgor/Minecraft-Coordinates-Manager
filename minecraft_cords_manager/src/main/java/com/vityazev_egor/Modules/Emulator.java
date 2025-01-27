@@ -7,6 +7,7 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
@@ -21,7 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class Emulator {
-    private Robot r;
+    private Robot robot;
 
     // символы, которые по какой-то причине не переводяться используя getExtendedKeyCodeForChar
     private HashMap<String, Integer> unsuportedChars = new HashMap<>(){
@@ -33,7 +34,7 @@ public class Emulator {
 
     public Emulator(){
         try {
-            r = new Robot();
+            robot = new Robot();
         } catch (AWTException e) {
             print("Can't create robot");
             e.printStackTrace();
@@ -41,8 +42,8 @@ public class Emulator {
         }
     }
 
-    public void writeText(String textToWrite, Integer delay){
-        sleep(delay);
+    public void writeText(String textToWrite, Integer delayMilis){
+        Shared.sleep(delayMilis);
 
         for (int i=0; i<textToWrite.length(); i++){
             char currentChar = textToWrite.charAt(i);
@@ -57,7 +58,7 @@ public class Emulator {
             if (keyCode !=null){
                 try{
                     press(keyCode);
-                    sleep(20);
+                    Shared.sleep(20);
                 }
                 catch (Exception ex){
                     print("Can't press this key: " + currentChar);
@@ -72,11 +73,11 @@ public class Emulator {
 
     // works only on windows
     public String getCords(){
-        r.keyPress(KeyEvent.VK_F3);
-        r.keyPress(KeyEvent.VK_C);
-        r.keyRelease(KeyEvent.VK_F3);
-        r.keyRelease(KeyEvent.VK_C);
-        sleep(100);
+        robot.keyPress(KeyEvent.VK_F3);
+        robot.keyPress(KeyEvent.VK_C);
+        robot.keyRelease(KeyEvent.VK_F3);
+        robot.keyRelease(KeyEvent.VK_C);
+        Shared.sleep(100);
         try{
             return (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
         }
@@ -94,7 +95,7 @@ public class Emulator {
     public BufferedImage getScreenShot(){
         if (FakeMain.isWindows){
             var screenSize = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
-            return r.createScreenCapture(screenSize);
+            return robot.createScreenCapture(screenSize);
         }
         else{
             try {
@@ -113,19 +114,19 @@ public class Emulator {
         }
     }
 
-    private void sleep(Integer mSeconds){
+    public Optional<BufferedImage> getScreenShotWinX11(){
         try{
-            Thread.sleep(mSeconds);
-        }
-        catch (Exception ex){
-            print("Can't pause thread");
-            ex.printStackTrace();
+            var screenSize = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
+            return Optional.of(robot.createScreenCapture(screenSize));
+        } catch (Exception ex){
+            Shared.printEr(ex, "Got error while making screenshot");
+            return Optional.empty();
         }
     }
 
     public void press(Integer keyCode){
-        r.keyPress(keyCode);
-        r.keyRelease(keyCode);
+        robot.keyPress(keyCode);
+        robot.keyRelease(keyCode);
     }
 
     private void print(String text){

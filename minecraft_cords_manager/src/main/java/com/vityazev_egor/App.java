@@ -7,6 +7,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import lombok.Getter;
 
 import java.awt.Dimension;
 import java.io.IOException;
@@ -14,7 +15,9 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.vityazev_egor.Modules.ServerApi;
 import com.vityazev_egor.Modules.Shared;
+import com.vityazev_egor.Scenes.AddCordsPage;
 import com.vityazev_egor.Scenes.ICustomScene;
 import com.vityazev_egor.Scenes.MyCordsPage;
 import com.vityazev_egor.Scenes.SettingsPage;
@@ -23,12 +26,16 @@ import atlantafx.base.theme.PrimerDark;
 
 public class App extends Application {
 
+    @Getter
+    private final ServerApi serverApi = new ServerApi();
+    @Getter
+    private final Dimension defaultSize = new Dimension(720+50, 524+10);
     private Stage currentStage;
     private final Map<String, ICustomScene> fxmls = Map.of(
         SettingsPage.class.getName(), new SettingsPage(this),
-        MyCordsPage.class.getName(), new MyCordsPage(this)
+        MyCordsPage.class.getName(), new MyCordsPage(this),
+        AddCordsPage.class.getName(), new AddCordsPage(this)
     );
-    private final Dimension defaultSize = new Dimension(720+50, 524+10);
 
     private static ExecutorService executor = Executors.newSingleThreadExecutor();
 
@@ -41,7 +48,7 @@ public class App extends Application {
         // currentStage.setMinWidth(720+50);
         // currentStage.setMinHeight(524+10);
 
-        currentStage.setTitle("Minecraft cords manager");
+        currentStage.setTitle("MC Manager");
         currentStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 
             @Override
@@ -66,10 +73,6 @@ public class App extends Application {
         executor.submit(() -> {
             page.beforeShow();
             Platform.runLater(() -> {
-                currentStage.show();
-                currentStage.toFront();
-                currentStage.requestFocus();
-
                 page.getMinSize().ifPresentOrElse(size ->{
                     currentStage.setMinWidth(size.getWidth());
                     currentStage.setMinHeight(size.getHeight());
@@ -78,8 +81,24 @@ public class App extends Application {
                     currentStage.setMinWidth(defaultSize.getWidth());
                     currentStage.setMinHeight(defaultSize.getHeight());
                 });
+
+                currentStage.show();
+                currentStage.toFront();
+                currentStage.requestFocus();
             });
         });
+        // page.beforeShow();
+        // page.getMinSize().ifPresentOrElse(size ->{
+        //     currentStage.setMinWidth(size.getWidth());
+        //     currentStage.setMinHeight(size.getHeight());
+        // },
+        // () -> {
+        //     currentStage.setMinWidth(defaultSize.getWidth());
+        //     currentStage.setMinHeight(defaultSize.getHeight());
+        // });
+        // currentStage.show();
+        // currentStage.toFront();
+        // currentStage.requestFocus();
     }
 
     public static void setRoot(String fxml){

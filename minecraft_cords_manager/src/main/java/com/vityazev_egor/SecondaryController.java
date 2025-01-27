@@ -38,12 +38,7 @@ public class SecondaryController extends CustomInit implements Initializable {
 
     public SecondaryController() {
         super("secondary");
-        try{
-            api = new ServerApi();
-        }catch (IOException ex){
-            Shared.printEr(ex, "Can't init server api");
-            System.exit(1);
-        }
+        api = new ServerApi();
     }
 
     @Override

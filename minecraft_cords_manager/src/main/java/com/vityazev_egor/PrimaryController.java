@@ -134,7 +134,7 @@ public class PrimaryController extends CustomInit implements Initializable{
             var processList = NativeWindowsManager.getAllProcess();
             var minecraftWindow = processList.stream().filter(p-> p.title.toLowerCase().contains("minecraft") && !p.title.toLowerCase().contains("manager")).findFirst().orElse(null);
             if (minecraftWindow != null){
-                if (NativeWindowsManager.ActivateWindow(minecraftWindow)){
+                if (NativeWindowsManager.activateWindow(minecraftWindow)){
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
