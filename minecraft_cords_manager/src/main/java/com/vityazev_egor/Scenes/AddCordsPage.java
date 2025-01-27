@@ -109,7 +109,8 @@ public class AddCordsPage implements ICustomScene {
         try{
             NativeWindowsManager.activateWindow("Minecraft ");
             Shared.sleep(100);
-            var filteredCords = filterCords(emulator.getCords()).orElseThrow(() -> new CustomException("Can't get coordinates"));
+            var rawCords = emulator.getCords().orElseThrow(()-> new CustomException("Can't get coordinates from clipboard"));
+            var filteredCords = filterCords(rawCords).orElseThrow(() -> new CustomException("Can't parse coordinates"));
             coordField.setText(filteredCords);
             Shared.sleep(100);
             var screenShot = emulator.getScreenShotWinX11().orElseThrow(()-> new CustomException("Can't get screenshot"));

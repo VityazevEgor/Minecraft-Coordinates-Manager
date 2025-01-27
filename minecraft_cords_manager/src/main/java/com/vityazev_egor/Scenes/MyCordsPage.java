@@ -11,7 +11,6 @@ import org.kordamp.ikonli.feather.Feather;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import com.vityazev_egor.App;
-import com.vityazev_egor.FakeMain;
 import com.vityazev_egor.Models.TableEntity;
 import com.vityazev_egor.Modules.Emulator;
 import com.vityazev_egor.Modules.NativeWindowsManager;
@@ -35,7 +34,6 @@ import lombok.Getter;
 
 public class MyCordsPage implements ICustomScene{
 
-    private final App app;
     @Getter
     private final Scene scene;
     private final TableView<TableEntity> table = new TableView<>();
@@ -43,8 +41,8 @@ public class MyCordsPage implements ICustomScene{
     private final Emulator emulator = new Emulator();
     private final ServerApi api;
 
+    @SuppressWarnings("unchecked")
     public MyCordsPage(App app) {
-        this.app = app;
         this.api = app.getServerApi();
 
         final var root = new VBox();
@@ -65,11 +63,6 @@ public class MyCordsPage implements ICustomScene{
             enterCordsButton,
             deleteButton
         );
-
-        Button button = new Button("Go back");
-        button.setOnAction(event -> {
-            app.openPage(SettingsPage.class.getName());
-        });
 
         // set up table data
         ObservableList<TableEntity> data = FXCollections.observableArrayList();
@@ -96,7 +89,7 @@ public class MyCordsPage implements ICustomScene{
         table.getStyleClass().add(Styles.BORDERED);
         // end of table setup
 
-        root.getChildren().addAll(toolbar, table, button);
+        root.getChildren().addAll(toolbar, table);
         service.scheduleWithFixedDelay(
             () -> updateData(), 
             0, 
@@ -128,7 +121,7 @@ public class MyCordsPage implements ICustomScene{
         if (NativeWindowsManager.activateWindow("Minecraft ")){
             Shared.sleep(2000);
             emulator.press(KeyEvent.VK_T);
-            emulator.writeText(tpCommand, 100);
+            emulator.writeText(tpCommand, 500);
             emulator.press(KeyEvent.VK_ENTER);
         }
         else{

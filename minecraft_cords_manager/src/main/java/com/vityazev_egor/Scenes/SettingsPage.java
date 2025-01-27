@@ -4,8 +4,6 @@ import java.awt.Dimension;
 import java.util.Optional;
 
 import com.vityazev_egor.App;
-import com.vityazev_egor.Modules.Shared;
-
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -67,11 +65,6 @@ public class SettingsPage implements ICustomScene{
     @Override
     public void beforeShow() {
         return;
-        // for some reason this code is not working as expected
-        // System.out.println("Server status = " + app.getServerApi().isServerAlive());
-        // if (app.getServerApi().isServerAlive()){
-        //     app.openPage(MyCordsPage.class.getName());
-        // }
     }
 
     @Override

@@ -3,7 +3,6 @@ package com.vityazev_egor.Modules;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import lombok.Getter;
@@ -18,9 +17,6 @@ public class ConsoleRunner {
     }
 
     public void setProcessBuilder(String rawCommand){
-        // List<String> command = Arrays.asList(rawCommand.split(" "));
-        // System.out.println(rawCommand);
-        // processBuilder = new ProcessBuilder(command).redirectErrorStream(true);
         processBuilder = new ProcessBuilder("bash", "-c", rawCommand)
             .redirectErrorStream(true);
     }

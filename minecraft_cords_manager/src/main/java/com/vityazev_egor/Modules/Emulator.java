@@ -8,27 +8,17 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.util.HashMap;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-
-import javax.imageio.ImageIO;
-
-import com.vityazev_egor.FakeMain;
-
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 public class Emulator {
     private Robot robot;
 
     // символы, которые по какой-то причине не переводяться используя getExtendedKeyCodeForChar
-    private HashMap<String, Integer> unsuportedChars = new HashMap<>(){
+    private HashMap<Character, Integer> unsuportedChars = new HashMap<>(){
         {
-            put(" ", KeyEvent.VK_SPACE);
-            put("?", KeyEvent.VK_QUOTEDBL);
+            put(' ', KeyEvent.VK_SPACE);
+            put('?', KeyEvent.VK_QUOTEDBL);
         }
     };
 
@@ -46,71 +36,47 @@ public class Emulator {
         Shared.sleep(delayMilis);
 
         for (int i=0; i<textToWrite.length(); i++){
-            char currentChar = textToWrite.charAt(i);
-            Integer keyCode = null;
-            if (unsuportedChars.containsKey(String.valueOf(currentChar))){
-                keyCode = unsuportedChars.get(String.valueOf(currentChar));
-            }
-            else{
-                keyCode = KeyEvent.getExtendedKeyCodeForChar(currentChar);
-            }
+            Character currentChar = textToWrite.charAt(i);
+            Integer keyCode = unsuportedChars.containsKey(currentChar) ? unsuportedChars.get(currentChar) : KeyEvent.getExtendedKeyCodeForChar(currentChar);
 
-            if (keyCode !=null){
-                try{
-                    press(keyCode);
-                    Shared.sleep(20);
-                }
-                catch (Exception ex){
-                    print("Can't press this key: " + currentChar);
-                    ex.printStackTrace();
-                }
+            if (keyCode == 0) continue;
+
+            try{
+                press(keyCode);
+                Shared.sleep(20);
             }
-            else{
-                print("WTF?");
+            catch (Exception ex){
+                print("Can't press this key: " + currentChar);
+                ex.printStackTrace();
             }
         }
     }
 
     // works only on windows
-    public String getCords(){
+    public Optional<String> getCords(){
         robot.keyPress(KeyEvent.VK_F3);
         robot.keyPress(KeyEvent.VK_C);
         robot.keyRelease(KeyEvent.VK_F3);
         robot.keyRelease(KeyEvent.VK_C);
         Shared.sleep(100);
         try{
-            return (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
+            return Optional.ofNullable( (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor));
         }
         catch (Exception ex){
             Shared.printEr(ex, "Can't get data from clipboard");
-            return "";
+            return Optional.empty();
         }
     }
 
-    public void setClipBoard(String text){
-        var content = new StringSelection(text);
-        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(content, content);
-    }
-
-    public BufferedImage getScreenShot(){
-        if (FakeMain.isWindows){
-            var screenSize = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
-            return robot.createScreenCapture(screenSize);
+    public Boolean setClipBoard(String text){
+        try{
+            var content = new StringSelection(text);
+            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(content, content);
+            return true;
         }
-        else{
-            try {
-                Files.deleteIfExists(Paths.get("screenshot.png"));
-                ProcessBuilder pb = new ProcessBuilder("shutter", "-f", "-e", "-n", "-o", "screenshot.png");
-                Process p = pb.start();
-                p.waitFor(20, TimeUnit.SECONDS);
-
-                print("Made screenshot using shutter");
-                return ImageIO.read(new File("screenshot.png"));
-
-            } catch (IOException | InterruptedException ex) {
-                Shared.printEr(ex, "Got error while making screenshot");
-                return null;
-            }
+        catch (Exception ex){
+            Shared.printEr(ex, "Can't set clipboard");
+            return false;
         }
     }
 

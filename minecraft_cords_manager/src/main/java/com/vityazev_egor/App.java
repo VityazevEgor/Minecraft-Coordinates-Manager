@@ -3,8 +3,6 @@ package com.vityazev_egor;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import lombok.Getter;
@@ -15,8 +13,9 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.github.kwhat.jnativehook.GlobalScreen;
+import com.vityazev_egor.Modules.KeyListener;
 import com.vityazev_egor.Modules.ServerApi;
-import com.vityazev_egor.Modules.Shared;
 import com.vityazev_egor.Scenes.AddCordsPage;
 import com.vityazev_egor.Scenes.ICustomScene;
 import com.vityazev_egor.Scenes.MyCordsPage;
@@ -31,7 +30,7 @@ public class App extends Application {
     @Getter
     private final Dimension defaultSize = new Dimension(720+50, 524+10);
     private Stage currentStage;
-    private final Map<String, ICustomScene> fxmls = Map.of(
+    private final Map<String, ICustomScene> scenes = Map.of(
         SettingsPage.class.getName(), new SettingsPage(this),
         MyCordsPage.class.getName(), new MyCordsPage(this),
         AddCordsPage.class.getName(), new AddCordsPage(this)
@@ -43,7 +42,7 @@ public class App extends Application {
     public void start(Stage stage) throws IOException {
         Application.setUserAgentStylesheet(new PrimerDark().getUserAgentStylesheet());
         currentStage = stage;
-        currentStage.setScene(fxmls.get(SettingsPage.class.getName()).getScene());
+        currentStage.setScene(scenes.get(SettingsPage.class.getName()).getScene());
         //_stage.setResizable(false);
         // currentStage.setMinWidth(720+50);
         // currentStage.setMinHeight(524+10);
@@ -59,16 +58,24 @@ public class App extends Application {
             
         });
         currentStage.show();
+        try{
+            GlobalScreen.registerNativeHook();
+            GlobalScreen.addNativeKeyListener(new KeyListener(this));
+        }catch (Exception e){
+            System.out.println("Can't register global hook");
+            e.printStackTrace();
+            System.exit(1);
+        }
         // Это строчка делает так, чтобы даже после того как мы скрыли Stage приложение продолжало работать в фоновом режиме и Platform.runLater дальше работал
         Platform.setImplicitExit(false);
     }
 
     public void openPage(String pageClassName){
-        if (!fxmls.containsKey(pageClassName)){
+        if (!scenes.containsKey(pageClassName)){
             return;
         }
         currentStage.hide();
-        var page = fxmls.get(pageClassName);
+        var page = scenes.get(pageClassName);
         currentStage.setScene(page.getScene());
         executor.submit(() -> {
             page.beforeShow();
@@ -87,57 +94,21 @@ public class App extends Application {
                 currentStage.requestFocus();
             });
         });
-        // page.beforeShow();
-        // page.getMinSize().ifPresentOrElse(size ->{
-        //     currentStage.setMinWidth(size.getWidth());
-        //     currentStage.setMinHeight(size.getHeight());
-        // },
-        // () -> {
-        //     currentStage.setMinWidth(defaultSize.getWidth());
-        //     currentStage.setMinHeight(defaultSize.getHeight());
-        // });
-        // currentStage.show();
-        // currentStage.toFront();
-        // currentStage.requestFocus();
     }
 
-    public static void setRoot(String fxml){
-        setVisible(false);
-        Shared.addOpenMessage(fxml);
-        executor.submit(() -> {
-            while (Shared.getLastMessage() != null) {
-                try{
-                    Thread.sleep(50);
-                }
-                catch (InterruptedException e){}
-            }
-            //SCENE.setRoot(fxmls.get(fxml));
-            Platform.runLater(() -> setVisible(true));
-        });
+    public void setVisible(Boolean flag){
+        if (flag){
+            currentStage.show();
+            currentStage.toFront();
+            currentStage.requestFocus();
+        }
+        else{
+            currentStage.hide();
+        }
     }
 
-    public static void setVisible(Boolean flag){
-        // if (currentStage == null){
-        //     return;
-        // }
-        // if (flag){
-        //     currentStage.show();
-        //     currentStage.toFront();
-        //     currentStage.requestFocus();
-        // }
-        // else{
-        //     currentStage.hide();
-        // }
-        return;
-    }
-
-    public static Boolean getVisible(){
-        return true;
-    }
-
-    private static Parent loadFXML(String fxml) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource(fxml + ".fxml"));
-        return fxmlLoader.load();
+    public Boolean getVisible(){
+        return currentStage.isShowing();
     }
 
     public static void init(String[] args) {
