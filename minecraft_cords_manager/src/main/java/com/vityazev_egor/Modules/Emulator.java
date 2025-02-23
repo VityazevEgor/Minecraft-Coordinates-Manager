@@ -43,7 +43,7 @@ public class Emulator {
 
             try{
                 press(keyCode);
-                Shared.sleep(20);
+                Shared.sleep(50);
             }
             catch (Exception ex){
                 print("Can't press this key: " + currentChar);

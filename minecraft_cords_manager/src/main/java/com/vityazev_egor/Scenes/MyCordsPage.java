@@ -118,7 +118,7 @@ public class MyCordsPage implements ICustomScene{
     private void enterCoordinates(){
         String tpCommand = String.format("/tp %s", table.getSelectionModel().getSelectedItem().getCords().get());
         emulator.setClipBoard(tpCommand);
-        if (NativeWindowsManager.activateWindow("Minecraft ")){
+        if (NativeWindowsManager.activateWindow("Minecraft ") || NativeWindowsManager.activateWindow("Fear Nightfall")){
             Shared.sleep(2000);
             emulator.press(KeyEvent.VK_T);
             emulator.writeText(tpCommand, 500);
