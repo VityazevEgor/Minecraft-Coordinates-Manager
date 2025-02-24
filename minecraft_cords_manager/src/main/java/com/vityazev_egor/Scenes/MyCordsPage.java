@@ -27,6 +27,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.ToolBar;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
@@ -51,16 +52,24 @@ public class MyCordsPage implements ICustomScene{
         deleteButton.getStyleClass().add(Styles.DANGER);
         deleteButton.setOnAction(event -> deleteCordinates());
 
-        final var enterCordsButton = new Button("Enter cords", new FontIcon(Feather.CLIPBOARD));
+        final var enterCordsButton = new Button("Enter cords", new FontIcon(Feather.EXTERNAL_LINK));
         enterCordsButton.setOnAction(event -> enterCoordinates());
+
+        final var copyButton = new Button("Copy to clipboard", new FontIcon(Feather.CLIPBOARD));
+        copyButton.setOnAction(event -> copyCoordinates());
 
         final var addCordsButton = new Button("Add new coordinates", new FontIcon(Feather.PLUS));
         addCordsButton.setOnAction(event -> app.openPage(AddCordsPage.class.getName()));
 
+        final var searchField = new TextField();
+        searchField.setPromptText("Enter text to search");
+
         final var toolbar = new ToolBar(
             addCordsButton,
             new Separator(Orientation.VERTICAL),
+            searchField,
             enterCordsButton,
+            copyButton,
             deleteButton
         );
 
@@ -115,9 +124,13 @@ public class MyCordsPage implements ICustomScene{
         }
     }
 
-    private void enterCoordinates(){
+    private void copyCoordinates(){
         String tpCommand = String.format("/tp %s", table.getSelectionModel().getSelectedItem().getCords().get());
         emulator.setClipBoard(tpCommand);
+    }
+
+    private void enterCoordinates(){
+        String tpCommand = String.format("/tp %s", table.getSelectionModel().getSelectedItem().getCords().get());
         if (NativeWindowsManager.activateWindow("Minecraft ") || NativeWindowsManager.activateWindow("Fear Nightfall")){
             Shared.sleep(2000);
             emulator.press(KeyEvent.VK_T);

@@ -28,7 +28,7 @@ public class SettingsPage implements ICustomScene{
         root.setMinWidth(300.0);
         root.setMinHeight(200.0);
 
-        var createNewButton = new Button("Test and save!");
+        var createNewButton = new Button("Connect to the server");
         createNewButton.setMnemonicParsing(false);
         createNewButton.setOnAction(event -> testServerButton()); // Метод нужно реализовать
 

@@ -49,16 +49,13 @@ public class ServerApi {
 
     public ServerApi(String serverUrl){
         this.serverUrl = serverUrl;
-        try {
-            Files.write(savePath, serverUrl.getBytes(StandardCharsets.UTF_8));
-        } catch (Exception e) {
-            Shared.printEr(e, "Can't save server url");
-        }
     }
 
     public ServerApi(){
         try{
-            serverUrl = new String(Files.readAllBytes(savePath), StandardCharsets.UTF_8);
+            if (Files.exists(savePath)) {
+                serverUrl = new String(Files.readAllBytes(savePath), StandardCharsets.UTF_8);
+            }
         } catch (Exception e) {
             Shared.printEr(e, "Can't read server url");
         }
@@ -67,6 +64,7 @@ public class ServerApi {
     public Boolean isServerAlive(){
         Request request = new Request.Builder().url(serverUrl).build();
         try(Response response = client.newCall(request).execute()){
+            Files.write(savePath, serverUrl.getBytes(StandardCharsets.UTF_8));
             return response.isSuccessful();
         }
         catch (Exception e){
@@ -133,12 +131,11 @@ public class ServerApi {
         }
         catch (IOException e){
             Shared.printEr(e, "Error during request to the server");
-            return new ArrayList<CordsModel>();
         }
         catch (Exception e){
             Shared.printEr(e, "Can't desiaralize answer from server");
-            return new ArrayList<CordsModel>();
         }
+        return new ArrayList<CordsModel>();
     }
 
     public Optional<BufferedImage> getPreview(String fileName){
