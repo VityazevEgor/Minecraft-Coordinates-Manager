@@ -1,0 +1,12 @@
+.root:custom-theme {
+    -color-accent-0: #ffcccc;
+    -color-accent-1: #ffaaaa;
+    -color-accent-2: #ff8888;
+    -color-accent-3: #ff6666;
+    -color-accent-4: #ff4444; /* Main accent color */
+    -color-accent-5: #ff2222;
+    -color-accent-6: #dd1111;
+    -color-accent-7: #bb0000;
+    -color-accent-8: #990000;
+    -color-accent-9: #770000;
+}

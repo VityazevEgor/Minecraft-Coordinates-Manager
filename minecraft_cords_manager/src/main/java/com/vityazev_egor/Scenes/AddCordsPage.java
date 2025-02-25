@@ -17,7 +17,9 @@ import com.vityazev_egor.Modules.Shared.CustomException;
 
 import atlantafx.base.controls.Message;
 import atlantafx.base.theme.Styles;
+import atlantafx.base.util.Animations;
 import javafx.application.Platform;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -27,6 +29,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.ToolBar;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
+import javafx.util.Duration;
 
 public class AddCordsPage implements ICustomScene {
     private final Scene scene;
@@ -36,13 +39,14 @@ public class AddCordsPage implements ICustomScene {
     private final TextField nameField;
     private final Message errorMessage;
     private final App app;
+    private final VBox root;
 
     private BufferedImage currentPreview;
 
     public AddCordsPage(App app){
         this.app = app;
 
-        final var root = new VBox();
+        root = new VBox();
         root.setSpacing(5.0);
 
         final var goBackButton = new Button("Go back", new FontIcon(Feather.ARROW_LEFT));
@@ -54,6 +58,13 @@ public class AddCordsPage implements ICustomScene {
             goBackButton,
             addCordsButton
         );
+        toolbar.setStyle("-fx-background-color: #010409;");
+        Node[] buttonsForCustomDesign = new Node[]{addCordsButton, goBackButton};
+        for (Node buttonNode : buttonsForCustomDesign){
+            buttonNode.setStyle("-fx-background-color: #010409;");
+            buttonNode.setOnMouseEntered(event -> buttonNode.setStyle("-fx-background-color: #A371F726; -fx-text-fill: #8957E5FF;"));
+            buttonNode.setOnMouseExited(event -> buttonNode.setStyle("-fx-background-color: #010409;"));
+        }
 
         final var imageLabel = new Label("Preview of coordinats:");
         previewImage = new ImageView();
@@ -135,6 +146,10 @@ public class AddCordsPage implements ICustomScene {
                 errorMessage.setDescription(ex.getMessage());
                 errorMessage.setVisible(true);
             });
+        }
+
+        for (Node node : root.getChildren()){
+            Animations.fadeIn(node, Duration.seconds(2)).playFromStart();
         }
     }
 

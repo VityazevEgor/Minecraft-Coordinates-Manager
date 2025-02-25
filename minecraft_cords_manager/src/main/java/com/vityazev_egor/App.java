@@ -8,10 +8,19 @@ import javafx.stage.WindowEvent;
 import lombok.Getter;
 
 import java.awt.Dimension;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 import com.github.kwhat.jnativehook.GlobalScreen;
 import com.vityazev_egor.Modules.KeyListener;
@@ -38,9 +47,47 @@ public class App extends Application {
 
     private static ExecutorService executor = Executors.newSingleThreadExecutor();
 
+    public App(){
+        super();
+    }
+
+    @SuppressWarnings({ "unused", "resource" })
+    private void dumpCSS(){
+        String stylesheet = new PrimerDark().getUserAgentStylesheet();
+        System.out.println("Stylesheet path: " + stylesheet);
+
+        try {
+            // Получаем путь к теме
+            System.out.println("Stylesheet path: " + stylesheet);
+
+            // Загружаем ресурс как поток
+            InputStream inputStream = FakeMain.class.getResourceAsStream(stylesheet);
+            if (inputStream == null) {
+                System.err.println("Failed to load stylesheet.");
+                return;
+            }
+
+            // Читаем файл в список строк
+            List<String> lines = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))
+                    .lines()
+                    .collect(Collectors.toList());
+
+            // 🔹 Сохраняем измененный файл
+            Path outputFile = Path.of("primer-dark-modified.css");
+            Files.write(outputFile, lines, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+
+            System.out.println("Modified stylesheet saved as: " + outputFile.toAbsolutePath());
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public void start(Stage stage) throws IOException {
-        Application.setUserAgentStylesheet(new PrimerDark().getUserAgentStylesheet());
+        //Application.setUserAgentStylesheet(new PrimerDark().getUserAgentStylesheet());
+        Application.setUserAgentStylesheet(FakeMain.class.getResource("primer-dark-modified.css").toExternalForm());
+
         currentStage = stage;
         currentStage.setScene(scenes.get(SettingsPage.class.getName()).getScene());
         //_stage.setResizable(false);

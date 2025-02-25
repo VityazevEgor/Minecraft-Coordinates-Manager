@@ -18,9 +18,11 @@ import com.vityazev_egor.Modules.ServerApi;
 import com.vityazev_egor.Modules.Shared;
 
 import atlantafx.base.theme.Styles;
+import atlantafx.base.util.Animations;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Orientation;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -31,6 +33,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.ToolBar;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
+import javafx.util.Duration;
 import lombok.Getter;
 
 public class MyCordsPage implements ICustomScene{
@@ -38,15 +41,16 @@ public class MyCordsPage implements ICustomScene{
     @Getter
     private final Scene scene;
     private final TableView<TableEntity> table = new TableView<>();
-    private final ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
+    private final ScheduledExecutorService service = Executors.newScheduledThreadPool(2);
     private final Emulator emulator = new Emulator();
     private final ServerApi api;
+    private final VBox root;
 
     @SuppressWarnings("unchecked")
     public MyCordsPage(App app) {
         this.api = app.getServerApi();
 
-        final var root = new VBox();
+        root = new VBox();
 
         final var deleteButton = new Button("Delete", new FontIcon(Feather.DELETE));
         deleteButton.getStyleClass().add(Styles.DANGER);
@@ -72,6 +76,13 @@ public class MyCordsPage implements ICustomScene{
             copyButton,
             deleteButton
         );
+        Node[] buttonsForCustomDesign = new Node[]{addCordsButton, enterCordsButton, copyButton, deleteButton};
+        for (Node buttonNode : buttonsForCustomDesign){
+            buttonNode.setStyle("-fx-background-color: #010409;");
+            buttonNode.setOnMouseEntered(event -> buttonNode.setStyle("-fx-background-color: #A371F726; -fx-text-fill: #8957E5FF;"));
+            buttonNode.setOnMouseExited(event -> buttonNode.setStyle("-fx-background-color: #010409;"));
+        }
+        toolbar.setStyle("-fx-background-color: #010409;");
 
         // set up table data
         ObservableList<TableEntity> data = FXCollections.observableArrayList();
@@ -82,7 +93,7 @@ public class MyCordsPage implements ICustomScene{
 
         TableColumn<TableEntity, String> titleColumn = new TableColumn<>("Title");
         titleColumn.setCellValueFactory(cellData -> cellData.getValue().getTitle());
-        titleColumn.setMinWidth(100);
+        titleColumn.setMinWidth(200);
 
         TableColumn<TableEntity, String> cordsColumn = new TableColumn<>("Cords");
         cordsColumn.setCellValueFactory(cellData -> cellData.getValue().getCords());
@@ -105,7 +116,24 @@ public class MyCordsPage implements ICustomScene{
             5,
             TimeUnit.SECONDS
         );
+        service.scheduleWithFixedDelay(
+            () -> pulseSelectedEntity(), 
+            0, 
+            1, 
+            TimeUnit.SECONDS
+        );
+
         this.scene = new Scene(root);
+    }
+
+    private void pulseSelectedEntity(){
+        var selectedItem = table.getSelectionModel().getSelectedItem();
+        if (selectedItem == null) return;
+        try{
+            Animations.pulse(selectedItem.getImage().get(), 1.02).playFromStart();
+        } catch (Exception ex){
+            Shared.printEr(ex, "Can't play animation");
+        }
     }
 
     private void deleteCordinates(){
@@ -178,12 +206,14 @@ public class MyCordsPage implements ICustomScene{
 
     @Override
     public void beforeShow() {
-        return;
+        for (Node node : root.getChildren()){
+            Animations.fadeIn(node, Duration.seconds(2)).playFromStart();
+        }
     }
 
     @Override
     public Optional<Dimension> getMinSize() {
-        return Optional.empty();
+        return Optional.of(new Dimension(820+50, 524+10));
     }
     
 }

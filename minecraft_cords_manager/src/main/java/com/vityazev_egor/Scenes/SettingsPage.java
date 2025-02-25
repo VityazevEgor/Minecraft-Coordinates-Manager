@@ -4,6 +4,8 @@ import java.awt.Dimension;
 import java.util.Optional;
 
 import com.vityazev_egor.App;
+
+import atlantafx.base.util.Animations;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -11,6 +13,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
+import javafx.util.Duration;
 import lombok.Getter;
 
 public class SettingsPage implements ICustomScene{
@@ -45,6 +48,8 @@ public class SettingsPage implements ICustomScene{
         tableBox.getChildren().addAll(label, textField, createNewButton);
 
         root.getChildren().add(tableBox);
+        var animation = Animations.fadeIn(root, Duration.seconds(1));
+        animation.playFromStart();
         this.scene = new Scene(root);
     }
 
