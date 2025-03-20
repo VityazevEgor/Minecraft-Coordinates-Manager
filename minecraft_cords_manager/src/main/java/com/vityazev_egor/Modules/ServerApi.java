@@ -125,15 +125,16 @@ public class ServerApi {
             .build();
 
         try(Response response = client.newCall(request).execute()){
+            if (!response.isSuccessful())
+                throw new IOException("Got bad response code = " + response.code());
             String rawText = response.body().string();
-            System.out.println(rawText);
             return Arrays.asList(mapper.readValue(rawText, CordsModel[].class));
         }
         catch (IOException e){
             Shared.printEr(e, "Error during request to the server");
         }
         catch (Exception e){
-            Shared.printEr(e, "Can't desiaralize answer from server");
+            Shared.printEr(e, "Can't deserialize answer from server");
         }
         return new ArrayList<CordsModel>();
     }
@@ -145,7 +146,8 @@ public class ServerApi {
             .build();
 
         try(Response response = client.newCall(request).execute()){
-            System.out.print(response.code());
+            if (!response.isSuccessful())
+                throw new IOException("Got bad response code = " + response.code());
             return Optional.ofNullable(ImageIO.read(response.body().byteStream()));
         }
         catch (IOException e){

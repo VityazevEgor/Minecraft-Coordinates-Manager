@@ -36,7 +36,7 @@ import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import lombok.Getter;
 
-public class MyCordsPage implements ICustomScene{
+public class MyCordsPage extends ICustomScene{
 
     @Getter
     private final Scene scene;
@@ -45,16 +45,19 @@ public class MyCordsPage implements ICustomScene{
     private final Emulator emulator = new Emulator();
     private final ServerApi api;
     private final VBox root;
+    private final ObservableList<TableEntity> tableEntities = FXCollections.observableArrayList();
 
     @SuppressWarnings("unchecked")
     public MyCordsPage(App app) {
         this.api = app.getServerApi();
 
         root = new VBox();
+        root.setMinHeight(524);
+        root.setMinWidth(820);
 
         final var deleteButton = new Button("Delete", new FontIcon(Feather.DELETE));
         deleteButton.getStyleClass().add(Styles.DANGER);
-        deleteButton.setOnAction(event -> deleteCordinates());
+        deleteButton.setOnAction(event -> deleteCoordinates());
 
         final var enterCordsButton = new Button("Enter cords", new FontIcon(Feather.EXTERNAL_LINK));
         enterCordsButton.setOnAction(event -> enterCoordinates());
@@ -67,6 +70,17 @@ public class MyCordsPage implements ICustomScene{
 
         final var searchField = new TextField();
         searchField.setPromptText("Enter text to search");
+        searchField.textProperty().addListener((observable, oldValue, newValue) ->{
+            if (newValue.isBlank()){
+                table.setItems(tableEntities);
+                return;
+            }
+            var filteredResults =  FXCollections.observableArrayList(
+                    tableEntities.stream()
+                            .filter(tableEntity -> tableEntity.getTitle().getValue().contains(newValue)).toList()
+            );
+            table.setItems(filteredResults);
+        });
 
         final var toolbar = new ToolBar(
             addCordsButton,
@@ -84,9 +98,7 @@ public class MyCordsPage implements ICustomScene{
         }
         toolbar.setStyle("-fx-background-color: #010409;");
 
-        // set up table data
-        ObservableList<TableEntity> data = FXCollections.observableArrayList();
-
+        // set up table cells
         TableColumn<TableEntity, ImageView> imageColumn = new TableColumn<>("Image");
         imageColumn.setCellValueFactory(cellData -> cellData.getValue().getImage());
         imageColumn.setMinWidth(210);
@@ -100,11 +112,10 @@ public class MyCordsPage implements ICustomScene{
         cordsColumn.setMinWidth(150);
 
         table.getColumns().addAll(imageColumn, titleColumn, cordsColumn);
-        table.setItems(data);
+        table.setItems(tableEntities);
 
-        // сделать так чтобы таблица растягивалось на всю ширину родительского блока
+        // сделать так, чтобы таблица растягивалось на всю ширину родительского блока
         table.prefWidthProperty().bind(root.widthProperty());
-        // сделать так чтобы таблица растягивалось на всю высоту родительского блока
         table.prefHeightProperty().bind(root.heightProperty());
         table.getStyleClass().add(Styles.BORDERED);
         // end of table setup
@@ -136,7 +147,7 @@ public class MyCordsPage implements ICustomScene{
         }
     }
 
-    private void deleteCordinates(){
+    private void deleteCoordinates(){
         TableEntity selectedRecord = table.getSelectionModel().getSelectedItem();
         if (api.deleteCord(selectedRecord.getId())){
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -158,10 +169,14 @@ public class MyCordsPage implements ICustomScene{
     }
 
     private void enterCoordinates(){
+        if (table.getSelectionModel().getSelectedItem() == null)
+            return;
         String tpCommand = String.format("/tp %s", table.getSelectionModel().getSelectedItem().getCords().get());
         if (NativeWindowsManager.activateWindow("Minecraft ") || NativeWindowsManager.activateWindow("Fear Nightfall")){
             Shared.sleep(2000);
             emulator.press(KeyEvent.VK_T);
+            emulator.press(KeyEvent.VK_BACK_SPACE);
+            emulator.press(KeyEvent.VK_BACK_SPACE);
             emulator.writeText(tpCommand, 500);
             emulator.press(KeyEvent.VK_ENTER);
         }
@@ -179,7 +194,7 @@ public class MyCordsPage implements ICustomScene{
         if (data.size() == 0) return;
 
         data.forEach(model ->{
-            if (table.getItems().stream().noneMatch(item->item.getTitle().get().equals(model.getTitle()))){
+            if (tableEntities.stream().noneMatch(item->item.getTitle().get().equals(model.getTitle()))){
                 api.getPreview(model.getImageName()).ifPresentOrElse(
                     image ->{
                         // создаём превью
@@ -187,7 +202,7 @@ public class MyCordsPage implements ICustomScene{
                         view.setFitWidth(200);
                         view.setFitHeight(150);
                         view.setImage(Shared.convertBufferedImage(image));
-                        table.getItems().add(new TableEntity(
+                        tableEntities.add(new TableEntity(
                                 model.getId(),
                                 view, 
                                 model.getTitle(), 
@@ -200,8 +215,8 @@ public class MyCordsPage implements ICustomScene{
             }            
         });
         
-        // удаляем те записи, которых нету в ответе от сервера
-        table.getItems().removeIf(item -> data.stream().noneMatch(model->model.getTitle().equals(item.getTitle().get())));
+        // удаляем те записи, которых нет в ответе от сервера
+        tableEntities.removeIf(item -> data.stream().noneMatch(model->model.getTitle().equals(item.getTitle().get())));
     }
 
     @Override
@@ -213,7 +228,7 @@ public class MyCordsPage implements ICustomScene{
 
     @Override
     public Optional<Dimension> getMinSize() {
-        return Optional.of(new Dimension(820+50, 524+10));
+        return Optional.of(new Dimension((int)root.getMinWidth(), (int) root.getMinHeight()));
     }
     
 }

@@ -16,7 +16,7 @@ import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import lombok.Getter;
 
-public class SettingsPage implements ICustomScene{
+public class SettingsPage extends ICustomScene{
     
     private final App app;
     private final Label label;

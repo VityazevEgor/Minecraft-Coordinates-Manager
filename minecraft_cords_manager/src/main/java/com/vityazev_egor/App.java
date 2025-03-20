@@ -90,19 +90,14 @@ public class App extends Application {
 
         currentStage = stage;
         currentStage.setScene(scenes.get(SettingsPage.class.getName()).getScene());
-        //_stage.setResizable(false);
-        // currentStage.setMinWidth(720+50);
-        // currentStage.setMinHeight(524+10);
+        currentStage.setResizable(true);
+//        currentStage.setMinWidth(720+50);
+//        currentStage.setMinHeight(524+10);
 
         currentStage.setTitle("MC Manager");
-        currentStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-
-            @Override
-            public void handle(WindowEvent arg0) {
-                System.out.println("Form closed so i going to kill app");
-                System.exit(0);
-            }
-            
+        currentStage.setOnCloseRequest(arg0 -> {
+            System.out.println("Form closed so i going to kill app");
+            System.exit(0);
         });
         currentStage.show();
         try{
@@ -121,24 +116,20 @@ public class App extends Application {
         if (!scenes.containsKey(pageClassName)){
             return;
         }
-        currentStage.hide();
-        var page = scenes.get(pageClassName);
-        currentStage.setScene(page.getScene());
+        var newScene = scenes.get(pageClassName);
+        if (newScene.hideWindowBeforeSwitch())
+            setVisible(false);
+        currentStage.setScene(newScene.getScene());
         executor.submit(() -> {
-            page.beforeShow();
+            newScene.beforeShow();
             Platform.runLater(() -> {
-                page.getMinSize().ifPresentOrElse(size ->{
-                    currentStage.setMinWidth(size.getWidth());
-                    currentStage.setMinHeight(size.getHeight());
-                },
-                () -> {
-                    currentStage.setMinWidth(defaultSize.getWidth());
-                    currentStage.setMinHeight(defaultSize.getHeight());
-                });
-
-                currentStage.show();
-                currentStage.toFront();
-                currentStage.requestFocus();
+                if (newScene.hideWindowBeforeSwitch()) {
+                    setVisible(true);
+                    newScene.getMinSize().ifPresent(size ->{
+                        currentStage.setMinWidth(size.getWidth());
+                        currentStage.setMinHeight(size.getHeight());
+                    });
+                }
             });
         });
     }

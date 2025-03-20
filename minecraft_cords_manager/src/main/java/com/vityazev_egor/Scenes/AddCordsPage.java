@@ -31,11 +31,11 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 
-public class AddCordsPage implements ICustomScene {
+public class AddCordsPage extends ICustomScene {
     private final Scene scene;
     private final Emulator emulator = new Emulator();
     private final ImageView previewImage;
-    private final TextField coordField;
+    private final TextField cordField;
     private final TextField nameField;
     private final Message errorMessage;
     private final App app;
@@ -48,6 +48,8 @@ public class AddCordsPage implements ICustomScene {
 
         root = new VBox();
         root.setSpacing(5.0);
+        root.setMinHeight(524);
+        root.setMinWidth(820);
 
         final var goBackButton = new Button("Go back", new FontIcon(Feather.ARROW_LEFT));
         goBackButton.setOnAction(event -> app.openPage(MyCordsPage.class.getName()));
@@ -66,25 +68,25 @@ public class AddCordsPage implements ICustomScene {
             buttonNode.setOnMouseExited(event -> buttonNode.setStyle("-fx-background-color: #010409;"));
         }
 
-        final var imageLabel = new Label("Preview of coordinats:");
+        final var imageLabel = new Label("Preview of coordinates:");
         previewImage = new ImageView();
         previewImage.setFitWidth(app.getDefaultSize().getWidth());
         previewImage.setFitHeight(app.getDefaultSize().getHeight()/2);
 
-        final var titleLabel = new Label("Name of new coordintaes:");
+        final var titleLabel = new Label("Name of new coordinates:");
         nameField = new TextField();
 
         final var coordInputLabel = new Label("Coordinates:");
-        coordField = new TextField();
-        coordField.setEditable(false);
-        coordField.setText("10 20 30");
+        cordField = new TextField();
+        cordField.setEditable(false);
+        cordField.setText("10 20 30");
 
         errorMessage = new Message("Error!", "Test", new FontIcon(Feather.ALERT_TRIANGLE));
         errorMessage.getStyleClass().add(Styles.DANGER);
         errorMessage.setVisible(false);
         errorMessage.setManaged(false);
 
-        root.getChildren().addAll(toolbar, errorMessage, imageLabel, previewImage, titleLabel, nameField, coordInputLabel, coordField);
+        root.getChildren().addAll(toolbar, errorMessage, imageLabel, previewImage, titleLabel, nameField, coordInputLabel, cordField);
         scene = new Scene(root);
     }
 
@@ -95,12 +97,12 @@ public class AddCordsPage implements ICustomScene {
 
     @Override
     public Optional<Dimension> getMinSize() {
-        return Optional.empty();
+        return Optional.of(new Dimension((int)root.getMinWidth(), (int)root.getMinHeight()));
     }
 
     private void saveCoordinates(){
         if (errorMessage.isVisible() || currentPreview == null) return;
-        if (app.getServerApi().createCord(nameField.getText(), coordField.getText(), currentPreview)){
+        if (app.getServerApi().createCord(nameField.getText(), cordField.getText(), currentPreview)){
             var alert = new Alert(AlertType.INFORMATION);
             alert.setTitle("Success");
             alert.setHeaderText("Coordinates saved");
@@ -122,7 +124,7 @@ public class AddCordsPage implements ICustomScene {
             Shared.sleep(100);
             var rawCords = emulator.getCords().orElseThrow(()-> new CustomException("Can't get coordinates from clipboard"));
             var filteredCords = filterCords(rawCords).orElseThrow(() -> new CustomException("Can't parse coordinates"));
-            coordField.setText(filteredCords);
+            cordField.setText(filteredCords);
             Shared.sleep(100);
             var screenShot = emulator.getScreenShotWinX11().orElseThrow(()-> new CustomException("Can't get screenshot"));
             previewImage.setImage(Shared.convertBufferedImage(screenShot));
@@ -189,6 +191,11 @@ public class AddCordsPage implements ICustomScene {
         catch (Exception ex){
             return false;
         }
+    }
+
+    @Override
+    public Boolean hideWindowBeforeSwitch(){
+        return true;
     }
     
 }

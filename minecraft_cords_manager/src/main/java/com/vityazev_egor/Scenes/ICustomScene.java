@@ -5,10 +5,19 @@ import java.util.Optional;
 
 import javafx.scene.Scene;
 
-public interface ICustomScene {
-    public Scene getScene();
-    public Optional<Dimension> getMinSize();
+public abstract class ICustomScene {
+    public abstract Scene getScene();
+
+    public Optional<Dimension> getMinSize(){
+        return Optional.empty();
+    }
 
     // this is going to be executed in another thread!
-    public void beforeShow();
+    public void beforeShow(){
+        return;
+    }
+
+    public Boolean hideWindowBeforeSwitch(){
+        return false;
+    }
 }
