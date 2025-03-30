@@ -6,9 +6,9 @@ Lost in the vast world of Minecraft? Can’t keep track of all those important p
 
 The **Minecraft Coordinates Manager** is a client-server application, not a mod, designed to enhance your Minecraft gaming experience. It consists of a client and a server that work together to provide the following features:
 
-- **Automatic Coordinate Capture (Windows only)** 📍: The program automatically captures your current in-game coordinates and takes a screenshot when you press the Insert key. For Linux users, you'll need to manually copy the coordinates, and the program will retrieve them from your clipboard when you open the window to save new coordinates.
+- **Automatic Coordinate Capture (Windows and Linux X11)** 📍: The program automatically captures your current in-game coordinates and takes a screenshot when you press the Insert key. For Linux users, you'll need to manually copy the coordinates, and the program will retrieve them from your clipboard when you open the window to save new coordinates.
 
-- **Teleportation Command (Windows only)** 🚀: The program automatically switches to the game window and enters the teleportation command to the selected coordinates. For Linux users, the program will write the teleportation command to your clipboard.
+- **Teleportation Command (Windows and Linux X11)** 🚀: The program automatically switches to the game window and enters the teleportation command to the selected coordinates. For Linux users, the program will write the teleportation command to your clipboard.
 
 - **Coordinate Storage** 🗃️: The program allows you to store information about coordinates, including the name and an in-game screenshot.
 
@@ -23,13 +23,14 @@ The program has been tested on the following platforms:
 - Windows 11 🪟
 - Windows 10 🪟
 - Ubuntu 22 🐧
+- Ubuntu 24 🐧
 
 ## Images of GUI
 ![Photo of main menu](/images/mainmenu.png "Main menu")
 ![Photo of cords add menu](/images/savecordform.png "Adding cords menu")
 
 ## Video
-[![](https://markdown-videos-api.jorgenkh.no/youtube/ztlR-YaVwKA)](https://youtu.be/ztlR-YaVwKA)
+[![](https://markdown-videos-api.jorgenkh.no/youtube/KLv_6M5al-U)](https://youtu.be/KLv_6M5al-U)
 
 
 # How to run Minecraft Coordinates Manager (Client)
@@ -67,35 +68,23 @@ If you don't have Java installed or if you have a version lower than 17, here's 
 
 The process to install OpenJDK 17 or higher on Linux depends on the distribution you're using. Here's how you can do it on Ubuntu:
 
-1. Update the package index:
-
 ```bash
 sudo apt update
-```
-
-2. Install the OpenJDK 17 (or higher) package:
-
-```bash
 sudo apt install openjdk-17-jdk
-```
-
-3. Verify the installation:
-
-```bash
 java -version
 ```
 
 You should now see "17" or higher as your Java version. If you're using a different Linux distribution, please refer to its documentation for instructions on how to install OpenJDK 17 or higher.
 
-4. Install the `shutter` screenshot tool:
+Install the `xdotool`:
 
 ```bash
-sudo apt-get install shutter
+sudo apt install xdotool
 ```
 
 ## Running Minecraft Coordinates Manager (Client)
 
-Once you have Java 17 or higher and `shutter` (Linux only) installed, you can proceed with the installation of the Minecraft Coordinates Manager:
+Once you have Java 17 or higher and `xdotool` (Linux only) installed, you can proceed with the installation of the Minecraft Coordinates Manager:
 
 1. Go to the "Release" section of the project repository.
 2. Download the `mcmClient.jar` file.
@@ -106,35 +95,9 @@ Once you have Java 17 or higher and `shutter` (Linux only) installed, you can pr
 java -jar mcmClient.jar
 ```
 
-
-
 # How to run Minecraft Coordinates Manager (Client)
 
-The server component of the **Minecraft Coordinates Manager** also requires Java 17 (OpenJDK 17) or higher to run. Here's how you can set up the server on your Ubuntu VPS:
-
-## Installing Java 17 or Higher
-
-If you haven't already installed Java on your VPS, here's how you can install OpenJDK 17 or higher:
-
-1. Update the package index:
-
-```bash
-sudo apt update
-```
-
-2. Install the OpenJDK 17 (or higher) package:
-
-```bash
-sudo apt install openjdk-17-jdk
-```
-
-3. Verify the installation:
-
-```bash
-java -version
-```
-
-You should now see "17" or higher as your Java version.
+The server component of the **Minecraft Coordinates Manager** also requires Java 17 (OpenJDK 17) or higher to run.
 
 ## Running the Server as a Service
 
@@ -156,8 +119,9 @@ After=network.target
 [Service]
 User=root
 WorkingDirectory=/path/to/your/server/directory
-ExecStart=/usr/bin/java -jar mcmServer.jar
+ExecStart=java -jar mcmServer.jar
 Restart=always
+RestartSec=4
 
 [Install]
 WantedBy=multi-user.target

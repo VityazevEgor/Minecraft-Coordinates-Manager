@@ -1,4 +1,4 @@
-package com.vityazev_egor;
+package com.vityazev_egor.Modules;
 
 
 import java.util.ArrayList;
@@ -9,9 +9,9 @@ import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.WinDef.HWND;
 import com.sun.jna.platform.win32.WinUser;
 import com.sun.jna.win32.StdCallLibrary;
+import com.vityazev_egor.EntryPoint;
 
-// класс который может управлять окнами на виндовс
-@SuppressWarnings("exports")
+// Manages windows on Windows and Linux systems
 public class NativeWindowsManager {
 
     public interface User32 extends StdCallLibrary {
@@ -53,8 +53,37 @@ public class NativeWindowsManager {
         return result;
     }
 
-    public static boolean ActivateWindow(ProcessInfo pr){
+    public static Boolean activateWindow(ProcessInfo pr){
         final User32 user32 = User32.INSTANCE;
         return user32.ShowWindow(pr.handle.getPointer(), 9) && user32.SetForegroundWindow(pr.handle.getPointer());
+    }
+
+    public static Boolean activateWindow(String title){
+        if (EntryPoint.isWindows){
+            return activateWindowWin(title);
+        }else{
+            return activateWindowLinux(title);
+        }
+        
+    }
+
+    // for Linux only
+    private static Boolean activateWindowLinux(String title){
+        var runner = new ConsoleRunner(String.format("xdotool search \"%s\"", title));
+        var exitStatus = runner.runAndWaitForExit();
+        if (!exitStatus || runner.getOutput().size() < 2){
+            Shared.printEr(null, "Got less windows that expected");
+            return false;
+        }
+        runner.setProcessBuilder(String.format("xdotool windowactivate %s", runner.getOutput().get(1)));
+        runner.runAndWaitForExit();
+        return true;
+    }
+
+    private static Boolean activateWindowWin(String title){
+        return getAllProcess().stream().filter(pr -> pr.title.contains(title))
+            .findFirst()
+            .map(process -> activateWindow(process))
+            .orElse(false);
     }
 }

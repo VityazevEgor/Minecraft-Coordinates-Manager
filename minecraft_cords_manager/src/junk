@@ -1,0 +1,21 @@
+notmodule com.vityazev_egor {
+    requires javafx.controls;
+    requires javafx.fxml;
+    requires javafx.graphics;  // Missing module
+    requires javafx.base;      // Missing module
+    requires atlantafx.base;
+    requires java.base;
+    requires com.fasterxml.jackson.core;
+    requires com.fasterxml.jackson.databind;
+    requires lombok;
+    requires org.kordamp.ikonli.javafx;
+    requires org.kordamp.ikonli.feather;
+    requires org.kordamp.ikonli.core;
+    requires java.desktop;
+    requires com.github.kwhat.jnativehook;
+    requires com.fasterxml.jackson.annotation;
+    requires okhttp3;
+
+    opens com.vityazev_egor.Modules to com.fasterxml.jackson.databind;
+    opens com.vityazev_egor to javafx.graphics, javafx.fxml;
+}

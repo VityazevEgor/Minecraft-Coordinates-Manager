@@ -4,10 +4,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.SecureRandom;
 import java.util.List;
+import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,29 +27,9 @@ import com.vityzev_egor.cords_manager_server.Repos.CordsRepo;
 
 @RestController
 public class CordsController {
-    
-    private static final int FILENAME_LENGTH = 16;
-    private static final String CHARSET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    private static final SecureRandom RANDOM = new SecureRandom();
-
-    public String generateFileName(){
-        StringBuilder sb = new StringBuilder(FILENAME_LENGTH);
-        for (int i=0; i<FILENAME_LENGTH; i++){
-            sb.append(CHARSET.charAt( RANDOM.nextInt(CHARSET.length())));
-        }
-        return sb.toString();
-    }
-
-    public String getExtension(String fileName){
-        if (!fileName.contains(".")){
-            return null;
-        }
-        var ext = fileName.substring(fileName.lastIndexOf('.'));
-        return ext;
-    }
-
+    private final Logger logger = LoggerFactory.getLogger(CordsController.class);
     @Autowired
-    private CordsRepo context;
+    private CordsRepo cordsRepo;
 
     @GetMapping(path = "/")
     public String index(){
@@ -55,67 +38,14 @@ public class CordsController {
 
     @GetMapping(path = "/getall")
     public List<CordsModel> getAll(){
-        return context.findAll();
+        return cordsRepo.findAll();
     }
 
-    @SuppressWarnings("null")
-    @PostMapping("create")
-    public ResponseEntity<Boolean> create(@RequestParam("preview") MultipartFile file, @RequestParam("title") String title, @RequestParam("cords") String cords){
-        if (file==null || file.isEmpty() || !file.getContentType().startsWith("image") || file.getSize() > 6 * 1024 * 1024){
-            System.out.println("Filtered file");
-            return ResponseEntity.badRequest().body(false);
-        }
-        if (validateString(cords) || validateString(title) || !validateCords(cords)){
-            System.out.println("Not valid params");
-            return ResponseEntity.badRequest().body(false);
-        }
-
-        try{
-            var newFileName = generateFileName() + ".png";
-            Path filePath =  Paths.get(CordsManagerServerApplication.imageDirPath.toString(), newFileName);
-            System.out.println(filePath.toString());
-            file.transferTo(filePath.toFile());
-
-            var model = new CordsModel();
-            model.title = title;
-            model.cords = cords;
-            model.imageName = newFileName;
-            context.save(model);
-            return ResponseEntity.ok(true);
-        }
-        catch (Exception ex){
-            ex.printStackTrace();
-            return ResponseEntity.internalServerError().body(false);
-        }
-    }
-
-    @RequestMapping(value =  "/delete/{id}", method = RequestMethod.GET)
-    public ResponseEntity<Boolean> delete(@PathVariable("id") Integer id){
-        if (id == null){
-            return ResponseEntity.badRequest().body(false);
-        }
-        
-        CordsModel toDelete = context.findById(id).orElse(null);
-        if (toDelete == null){
-            return ResponseEntity.badRequest().body(false);
-        }
-
-        Path fileToDelete = Paths.get(CordsManagerServerApplication.imageDirPath.toString(), toDelete.imageName);
-        try {
-            Files.deleteIfExists(fileToDelete);
-        } catch (IOException e) {
-            System.out.println("Can't delete file, but i'm going to ignore it");
-        }
-
-        context.delete(toDelete);
-        return ResponseEntity.ok(true);
-    }
-
-    private Boolean validateString(String s){
+    private Boolean isInvalidString(String s){
         return s==null || s.isEmpty() || s.isBlank(); 
     }
 
-    private Boolean validateCords(String s){
+    private Boolean isValidCords(String s){
         String[] nums = s.split(" ");
         if (nums.length!=3) return false;
 
@@ -129,5 +59,46 @@ public class CordsController {
             }
         }
         return true;
+    }
+
+    @PostMapping("create")
+    public ResponseEntity<?> create(@RequestParam("preview") MultipartFile file, @RequestParam("title") String title, @RequestParam("cords") String cords) {
+        if (file.isEmpty() || !file.getContentType().startsWith("image") || file.getSize() > 6 * 1024 * 1024) {
+            logger.warn("Некорректный файл.");
+            return ResponseEntity.badRequest().body("File didn't pass validation");
+        }
+
+        if (isInvalidString(title) || isInvalidString(cords) || !isValidCords(cords)) {
+            logger.warn("Некорректные параметры: title={}, cords={}", title, cords);
+            return ResponseEntity.badRequest().body("Parameters didn't pass validation");
+        }
+
+        try {
+            String newFileName = UUID.randomUUID().toString() + ".png";
+            Path filePath = Paths.get(CordsManagerServerApplication.imageDirPath.toString(), newFileName);
+            file.transferTo(filePath.toFile());
+            CordsModel model = new CordsModel(null, title, cords, newFileName);
+            cordsRepo.save(model);
+
+            return ResponseEntity.ok(true);
+        } catch (Exception ex) {
+            logger.error("Ошибка при создании записи", ex);
+            return ResponseEntity.internalServerError().body(ex.getMessage());
+        }
+    }
+
+
+    @RequestMapping(value =  "/delete/{id}", method = RequestMethod.GET)
+    public ResponseEntity<Boolean> delete(@PathVariable("id") Integer id){        
+        return cordsRepo.findById(id).map(toDelete ->{
+            Path fileToDelete = Paths.get(CordsManagerServerApplication.imageDirPath.toString(), toDelete.getImageName());
+            try {
+                Files.deleteIfExists(fileToDelete);
+            } catch (IOException e) {
+                System.out.println("Can't delete file, but i'm going to ignore it");
+            }
+            cordsRepo.delete(toDelete);
+            return ResponseEntity.ok().body(true);
+        }).orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(false));
     }
 }
