@@ -115,7 +115,7 @@
                     <transformers>
                         <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                         <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                            <mainClass>com.vityazev_egor.FakeMain</mainClass>
+                            <mainClass>com.vityazev_egor.EntryPoint</mainClass>
                         </transformer>
                     </transformers>
                 </configuration>

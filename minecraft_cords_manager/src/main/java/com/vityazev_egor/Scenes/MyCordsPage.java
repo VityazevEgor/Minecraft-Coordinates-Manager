@@ -152,7 +152,7 @@ public class MyCordsPage extends ICustomScene{
         if (api.deleteCord(selectedRecord.getId())){
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Success!");
-            alert.setHeaderText("Coordinates were deleted succesfully");
+            alert.setHeaderText("Coordinates were deleted successfully");
             alert.showAndWait();
         }
         else{
@@ -174,9 +174,9 @@ public class MyCordsPage extends ICustomScene{
         String tpCommand = String.format("/tp %s", table.getSelectionModel().getSelectedItem().getCords().get());
         if (NativeWindowsManager.activateWindow("Minecraft ") || NativeWindowsManager.activateWindow("Fear Nightfall")){
             Shared.sleep(2000);
-            emulator.press(KeyEvent.VK_T);
-            emulator.press(KeyEvent.VK_BACK_SPACE);
-            emulator.press(KeyEvent.VK_BACK_SPACE);
+//            emulator.press(KeyEvent.VK_T);
+//            emulator.press(KeyEvent.VK_BACK_SPACE);
+//            emulator.press(KeyEvent.VK_BACK_SPACE);
             emulator.writeText(tpCommand, 500);
             emulator.press(KeyEvent.VK_ENTER);
         }

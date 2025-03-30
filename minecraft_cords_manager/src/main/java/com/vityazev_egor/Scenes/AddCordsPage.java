@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import javafx.geometry.Insets;
 import org.kordamp.ikonli.feather.Feather;
 import org.kordamp.ikonli.javafx.FontIcon;
 
@@ -34,6 +35,7 @@ import javafx.util.Duration;
 public class AddCordsPage extends ICustomScene {
     private final Scene scene;
     private final Emulator emulator = new Emulator();
+    private final Insets defaultPadding = new Insets(5,5, 5, 5);
     private final ImageView previewImage;
     private final TextField cordField;
     private final TextField nameField;
@@ -70,21 +72,28 @@ public class AddCordsPage extends ICustomScene {
 
         final var imageLabel = new Label("Preview of coordinates:");
         previewImage = new ImageView();
-        previewImage.setFitWidth(app.getDefaultSize().getWidth());
+        previewImage.setFitWidth(root.getMinWidth());
         previewImage.setFitHeight(app.getDefaultSize().getHeight()/2);
+        imageLabel.setPadding(defaultPadding);
 
         final var titleLabel = new Label("Name of new coordinates:");
         nameField = new TextField();
+        titleLabel.setPadding(defaultPadding);
+        nameField.setPadding(defaultPadding);
 
         final var coordInputLabel = new Label("Coordinates:");
         cordField = new TextField();
         cordField.setEditable(false);
         cordField.setText("10 20 30");
+        coordInputLabel.setPadding(defaultPadding);
+        cordField.setPadding(defaultPadding);
 
         errorMessage = new Message("Error!", "Test", new FontIcon(Feather.ALERT_TRIANGLE));
         errorMessage.getStyleClass().add(Styles.DANGER);
         errorMessage.setVisible(false);
         errorMessage.setManaged(false);
+        errorMessage.setPadding(defaultPadding);
+
 
         root.getChildren().addAll(toolbar, errorMessage, imageLabel, previewImage, titleLabel, nameField, coordInputLabel, cordField);
         scene = new Scene(root);

@@ -2,9 +2,7 @@ package com.vityazev_egor;
 
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.event.EventHandler;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 import lombok.Getter;
 
 import java.awt.Dimension;
@@ -61,7 +59,7 @@ public class App extends Application {
             System.out.println("Stylesheet path: " + stylesheet);
 
             // Загружаем ресурс как поток
-            InputStream inputStream = FakeMain.class.getResourceAsStream(stylesheet);
+            InputStream inputStream = EntryPoint.class.getResourceAsStream(stylesheet);
             if (inputStream == null) {
                 System.err.println("Failed to load stylesheet.");
                 return;
@@ -86,7 +84,7 @@ public class App extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         //Application.setUserAgentStylesheet(new PrimerDark().getUserAgentStylesheet());
-        Application.setUserAgentStylesheet(FakeMain.class.getResource("primer-dark-modified.css").toExternalForm());
+        Application.setUserAgentStylesheet(EntryPoint.class.getResource("primer-dark-modified.css").toExternalForm());
 
         currentStage = stage;
         currentStage.setScene(scenes.get(SettingsPage.class.getName()).getScene());

@@ -9,7 +9,7 @@ import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.WinDef.HWND;
 import com.sun.jna.platform.win32.WinUser;
 import com.sun.jna.win32.StdCallLibrary;
-import com.vityazev_egor.FakeMain;
+import com.vityazev_egor.EntryPoint;
 
 // Manages windows on Windows and Linux systems
 public class NativeWindowsManager {
@@ -59,7 +59,7 @@ public class NativeWindowsManager {
     }
 
     public static Boolean activateWindow(String title){
-        if (FakeMain.isWindows){
+        if (EntryPoint.isWindows){
             return activateWindowWin(title);
         }else{
             return activateWindowLinux(title);
@@ -72,7 +72,7 @@ public class NativeWindowsManager {
         var runner = new ConsoleRunner(String.format("xdotool search \"%s\"", title));
         var exitStatus = runner.runAndWaitForExit();
         if (!exitStatus || runner.getOutput().size() < 2){
-            Shared.printEr(null, "Got less windows that expectect");
+            Shared.printEr(null, "Got less windows that expected");
             return false;
         }
         runner.setProcessBuilder(String.format("xdotool windowactivate %s", runner.getOutput().get(1)));

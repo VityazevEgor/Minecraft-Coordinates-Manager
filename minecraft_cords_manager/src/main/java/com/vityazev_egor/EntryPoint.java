@@ -1,7 +1,7 @@
 package com.vityazev_egor;
 
 // фейковый главный класс просто для того, чтобы программа работала при компиляции в jar
-public class FakeMain {
+public class EntryPoint {
 
     public static final Boolean isWindows = System.getProperties().getProperty("os.name").toLowerCase().contains("windows");
 

@@ -68,7 +68,7 @@ public class ServerApi {
             return response.isSuccessful();
         }
         catch (Exception e){
-            Shared.printEr(e, "Server is not avaibel");
+            Shared.printEr(e, "Server is not available");
             return false;
         }
     }
