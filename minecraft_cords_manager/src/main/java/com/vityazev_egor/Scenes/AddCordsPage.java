@@ -111,19 +111,24 @@ public class AddCordsPage extends ICustomScene {
 
     private void saveCoordinates(){
         if (errorMessage.isVisible() || currentPreview == null) return;
-        if (app.getServerApi().createCord(nameField.getText(), cordField.getText(), currentPreview)){
-            var alert = new Alert(AlertType.INFORMATION);
-            alert.setTitle("Success");
-            alert.setHeaderText("Coordinates saved");
-            alert.showAndWait();
-            app.openPage(MyCordsPage.class.getName());
-        }
-        else{
-            var alert = new Alert(AlertType.ERROR);
-            alert.setTitle("Error");
-            alert.setHeaderText("Can't save coordinates");
-            alert.show();
-        }
+        
+        app.getDataManager().createCord(nameField.getText(), cordField.getText(), currentPreview)
+            .thenAccept(success -> {
+                Platform.runLater(() -> {
+                    if (success) {
+                        var alert = new Alert(AlertType.INFORMATION);
+                        alert.setTitle("Success");
+                        alert.setHeaderText("Coordinates saved");
+                        alert.showAndWait();
+                        app.openPage(MyCordsPage.class.getName());
+                    } else {
+                        var alert = new Alert(AlertType.ERROR);
+                        alert.setTitle("Error");
+                        alert.setHeaderText("Can't save coordinates");
+                        alert.show();
+                    }
+                });
+            });
     }
 
     @Override

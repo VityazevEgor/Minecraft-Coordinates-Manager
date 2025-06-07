@@ -14,6 +14,7 @@ import com.vityazev_egor.App;
 import com.vityazev_egor.Models.TableEntity;
 import com.vityazev_egor.Modules.Emulator;
 import com.vityazev_egor.Modules.NativeWindowsManager;
+import com.vityazev_egor.Modules.DataManager;
 import com.vityazev_egor.Modules.ServerApi;
 import com.vityazev_egor.Modules.Shared;
 
@@ -31,6 +32,8 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToolBar;
+import javafx.scene.control.Label;
+import javafx.application.Platform;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
@@ -43,13 +46,13 @@ public class MyCordsPage extends ICustomScene{
     private final TableView<TableEntity> table = new TableView<>();
     private final ScheduledExecutorService service = Executors.newScheduledThreadPool(2);
     private final Emulator emulator = new Emulator();
-    private final ServerApi api;
+    private final DataManager dataManager;
     private final VBox root;
     private final ObservableList<TableEntity> tableEntities = FXCollections.observableArrayList();
 
     @SuppressWarnings("unchecked")
     public MyCordsPage(App app) {
-        this.api = app.getServerApi();
+        this.dataManager = app.getDataManager();
 
         root = new VBox();
         root.setMinHeight(524);
@@ -67,6 +70,13 @@ public class MyCordsPage extends ICustomScene{
 
         final var addCordsButton = new Button("Add new coordinates", new FontIcon(Feather.PLUS));
         addCordsButton.setOnAction(event -> app.openPage(AddCordsPage.class.getName()));
+        
+        final var syncButton = new Button("Sync", new FontIcon(Feather.REFRESH_CW));
+        syncButton.setOnAction(event -> dataManager.forceSync());
+        
+        final var statusLabel = new Label();
+        statusLabel.setStyle("-fx-text-fill: #ffffff;");
+        updateStatusLabel(statusLabel);
 
         final var searchField = new TextField();
         searchField.setPromptText("Enter text to search");
@@ -88,9 +98,12 @@ public class MyCordsPage extends ICustomScene{
             searchField,
             enterCordsButton,
             copyButton,
-            deleteButton
+            deleteButton,
+            new Separator(Orientation.VERTICAL),
+            syncButton,
+            statusLabel
         );
-        Node[] buttonsForCustomDesign = new Node[]{addCordsButton, enterCordsButton, copyButton, deleteButton};
+        Node[] buttonsForCustomDesign = new Node[]{addCordsButton, enterCordsButton, copyButton, deleteButton, syncButton};
         for (Node buttonNode : buttonsForCustomDesign){
             buttonNode.setStyle("-fx-background-color: #010409;");
             buttonNode.setOnMouseEntered(event -> buttonNode.setStyle("-fx-background-color: #A371F726; -fx-text-fill: #8957E5FF;"));
@@ -122,7 +135,10 @@ public class MyCordsPage extends ICustomScene{
 
         root.getChildren().addAll(toolbar, table);
         service.scheduleWithFixedDelay(
-            () -> updateData(), 
+            () -> {
+                updateData();
+                Platform.runLater(() -> updateStatusLabel(statusLabel));
+            }, 
             0, 
             5,
             TimeUnit.SECONDS
@@ -149,18 +165,23 @@ public class MyCordsPage extends ICustomScene{
 
     private void deleteCoordinates(){
         TableEntity selectedRecord = table.getSelectionModel().getSelectedItem();
-        if (api.deleteCord(selectedRecord.getId())){
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Success!");
-            alert.setHeaderText("Coordinates were deleted successfully");
-            alert.showAndWait();
-        }
-        else{
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Error!");
-            alert.setHeaderText("Coordinates were not deleted");
-            alert.showAndWait();
-        }
+        if (selectedRecord == null) return;
+        
+        dataManager.deleteCord(selectedRecord.getId()).thenAccept(success -> {
+            Platform.runLater(() -> {
+                if (success) {
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("Success!");
+                    alert.setHeaderText("Coordinates were deleted successfully");
+                    alert.showAndWait();
+                } else {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Error!");
+                    alert.setHeaderText("Coordinates were not deleted");
+                    alert.showAndWait();
+                }
+            });
+        });
     }
 
     private void copyCoordinates(){
@@ -190,12 +211,12 @@ public class MyCordsPage extends ICustomScene{
     }
 
     private void updateData(){
-        var data = api.getAllCords();
+        var data = dataManager.getAllCords();
         if (data.size() == 0) return;
 
         data.forEach(model ->{
             if (tableEntities.stream().noneMatch(item->item.getTitle().get().equals(model.getTitle()))){
-                api.getPreview(model.getImageName()).ifPresentOrElse(
+                dataManager.getPreview(model.getImageName()).ifPresentOrElse(
                     image ->{
                         // создаём превью
                         ImageView view = new ImageView();
@@ -217,6 +238,16 @@ public class MyCordsPage extends ICustomScene{
         
         // удаляем те записи, которых нет в ответе от сервера
         tableEntities.removeIf(item -> data.stream().noneMatch(model->model.getTitle().equals(item.getTitle().get())));
+    }
+    
+    private void updateStatusLabel(Label statusLabel) {
+        if (dataManager.isOnline()) {
+            statusLabel.setText("Online " + dataManager.getLocalCoordinatesCount() + " coords");
+            statusLabel.setStyle("-fx-text-fill: #4CAF50;");
+        } else {
+            statusLabel.setText("Offline " + dataManager.getLocalCoordinatesCount() + " coords");
+            statusLabel.setStyle("-fx-text-fill: #FF9800;");
+        }
     }
 
     @Override

@@ -21,6 +21,7 @@ import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import com.github.kwhat.jnativehook.GlobalScreen;
+import com.vityazev_egor.Modules.DataManager;
 import com.vityazev_egor.Modules.KeyListener;
 import com.vityazev_egor.Modules.ServerApi;
 import com.vityazev_egor.Scenes.AddCordsPage;
@@ -34,6 +35,8 @@ public class App extends Application {
 
     @Getter
     private final ServerApi serverApi = new ServerApi();
+    @Getter
+    private final DataManager dataManager = new DataManager(serverApi);
     @Getter
     private final Dimension defaultSize = new Dimension(720+50, 524+10);
     private Stage currentStage;
@@ -95,6 +98,7 @@ public class App extends Application {
         currentStage.setTitle("MC Manager");
         currentStage.setOnCloseRequest(arg0 -> {
             System.out.println("Form closed so i going to kill app");
+            dataManager.shutdown();
             System.exit(0);
         });
         currentStage.show();

@@ -31,7 +31,7 @@ public class SettingsPage extends ICustomScene{
         root.setMinWidth(300.0);
         root.setMinHeight(200.0);
 
-        var createNewButton = new Button("Connect to the server");
+        var createNewButton = new Button("Continue");
         createNewButton.setMnemonicParsing(false);
         createNewButton.setOnAction(event -> testServerButton()); // Метод нужно реализовать
 
@@ -55,15 +55,22 @@ public class SettingsPage extends ICustomScene{
 
     private void testServerButton(){
         app.getServerApi().setServerUrl(textField.getText());
+        
+        if (app.getDataManager().hasLocalData()) {
+            app.openPage(MyCordsPage.class.getName());
+            return;
+        }
+        
         if (app.getServerApi().isServerAlive() && textField.getText().endsWith("/")){
             app.openPage(MyCordsPage.class.getName());
         }
         else{
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("ERROR!");
-            alert.setHeaderText("Server is not alive or URL is incorrect");
-            //alert.setContentText(ex.getMessage());
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Offline Mode");
+            alert.setHeaderText("Server is not available, but you can use offline mode");
+            alert.setContentText("Your coordinates will be saved locally and synced when server becomes available.");
             alert.showAndWait();
+            app.openPage(MyCordsPage.class.getName());
         }
     }
 
